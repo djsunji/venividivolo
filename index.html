@@ -677,6 +677,20 @@ input[type=range] { accent-color: var(--sea); }
 :root[data-theme="dark"] .brand img, :root[data-theme="dark"] .match .mlogo { filter: invert(1) !important; }
 @media (min-width: 1000px) { .card .phnav { width: 44px; height: 44px; } .card .phnav svg { width: 22px; height: 22px; } .card .phnav.l { left: 16px; } .card .phnav.r { right: 16px; } }
 
+/* Filter: flexibel, Regionen */
+.flexbtn { width: max-content; justify-self: start; margin-top: 10px; display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; }
+.chip.cont { font-weight: 700; }
+
+/* Länder-Tags */
+.hint { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.taginput { display: flex; gap: 8px; margin-top: 10px; }
+.taginput[hidden] { display: none; }
+.taginput input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; }
+.taginput input:focus { outline: 2px solid var(--sea); outline-offset: 1px; }
+.taginput button { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--sea); color: #fff; font-size: 22px; line-height: 1; display: grid; place-items: center; }
+.chip.ctag { display: inline-flex; align-items: center; gap: 6px; }
+.chip.ctag span { font-size: 16px; line-height: 1; opacity: .8; }
+
 /* ---------- Desktop ---------- */
 .desk-only { display: none; }
 @media (min-width: 1000px) {
@@ -771,7 +785,7 @@ input[type=range] { accent-color: var(--sea); }
     <!-- Filter -->
     <section class="view" id="v-filter" hidden aria-label="Was suchst du?">
       <form class="filter" id="filter-form">
-        <div class="section-h" style="padding-bottom:0"><h2>Was suchst du?</h2><button type="button" class="linkbtn" id="reset">Zurücksetzen</button></div>
+        <div class="section-h" style="padding-bottom:0"><h2>Was suchst du?</h2></div>
 
         <div class="fgroup">
           <div class="lbl">Reiseart</div>
@@ -780,13 +794,17 @@ input[type=range] { accent-color: var(--sea); }
 
         <div class="fgroup">
           <div class="lbl"><span>Max. Reisezeit ab Zürich</span><output id="o-hours"></output></div>
-          <input type="range" id="f-hours" min="1" max="14" step="0.5">
-          <div class="scale"><span>1 h</span><span>Europa</span><span>Fernreise</span><span>14 h</span></div>
+          <input type="range" id="f-hours" min="1" max="24" step="0.5">
+          <div class="scale"><span>1 h</span><span>Europa</span><span>12 h</span><span>Fernreise</span><span>24 h</span></div>
+          <p class="hint">Über 12 h wählst du statt Ländern Kontinente und Regionen.</p>
         </div>
 
         <div class="fgroup">
-          <div class="lbl"><span>Land</span><output id="o-countries"></output></div>
+          <div class="lbl"><span id="l-countries">Land</span><output id="o-countries"></output></div>
           <div class="chips" id="f-countries"></div>
+          <div class="taginput" id="f-tagwrap"><input type="text" id="f-country-in" list="country-list" placeholder="Land eingeben, z. B. Portugal" autocomplete="off" enterkeyhint="done" aria-label="Land eingeben"><button type="button" id="f-country-add" aria-label="Land hinzufügen">+</button></div>
+          <datalist id="country-list"></datalist>
+          <p class="hint" id="f-tag-note" hidden></p>
         </div>
 
         <div class="fgroup">
@@ -794,8 +812,10 @@ input[type=range] { accent-color: var(--sea); }
           <div class="steppers">
             <div class="stepper"><div><b>Erwachsene</b><small>ab 18 J.</small></div>
               <div class="ctl"><button type="button" id="ad-minus" aria-label="Erwachsene weniger">−</button><output id="o-adults"></output><button type="button" id="ad-plus" aria-label="Erwachsene mehr">+</button></div></div>
-            <div class="stepper"><div><b>Kinder</b><small>0–17 J.</small></div>
+            <div class="stepper"><div><b>Kinder</b><small>2–17 J.</small></div>
               <div class="ctl"><button type="button" id="ki-minus" aria-label="Kinder weniger">−</button><output id="o-kids"></output><button type="button" id="ki-plus" aria-label="Kinder mehr">+</button></div></div>
+            <div class="stepper"><div><b>Babys</b><small>unter 2 J.</small></div>
+              <div class="ctl"><button type="button" id="ba-minus" aria-label="Babys weniger">−</button><output id="o-babies"></output><button type="button" id="ba-plus" aria-label="Babys mehr">+</button></div></div>
           </div>
           <div class="kids-ages" id="kids-ages"></div>
         </div>
@@ -806,6 +826,7 @@ input[type=range] { accent-color: var(--sea); }
             <label for="f-from">Abreise frühestens<input type="date" id="f-from"></label>
             <label for="f-to">Abreise spätestens<input type="date" id="f-to"></label>
           </div>
+          <button type="button" class="chip flexbtn" id="f-flex" aria-pressed="false"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Flexibel ± 2 Tage</button>
         </div>
 
         <div class="sticky-cta"><button class="btn" type="submit" id="apply">Angebote zeigen</button></div>
@@ -1154,13 +1175,18 @@ function photos(o) {
 const TODAY = new Date(2026, 9, 8);
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
-const DEFAULTS = () => ({ types: [], hours: 6, countries: [], adults: 2, kids: 0, ages: [], from: iso(TODAY), to: iso(addDays(TODAY, 60)) });
+const REGION = { Frankreich: ["Europa", "Südeuropa"], Italien: ["Europa", "Südeuropa"], Spanien: ["Europa", "Südeuropa"], Griechenland: ["Europa", "Südeuropa"], Portugal: ["Europa", "Südeuropa"], Kroatien: ["Europa", "Südeuropa"], Zypern: ["Europa", "Südeuropa"], Island: ["Europa", "Nordeuropa"], Norwegen: ["Europa", "Nordeuropa"],
+  Tunesien: ["Afrika", "Nordafrika"], Marokko: ["Afrika", "Nordafrika"], Ägypten: ["Afrika", "Nordafrika"], Thailand: ["Asien", "Südostasien"], Vietnam: ["Asien", "Südostasien"], Malediven: ["Asien", "Indischer Ozean"], "Vereinigte Arabische Emirate": ["Asien", "Naher Osten"],
+  USA: ["Amerika", "Nordamerika"], Mexiko: ["Amerika", "Mittelamerika & Karibik"], "Dominikanische Republik": ["Amerika", "Mittelamerika & Karibik"] };
+const regionOf = o => REGION[o.country] || ["Weitere", "Weitere"];
+const DEFAULTS = () => ({ types: [], hours: 6, countries: [], regions: [], adults: 2, kids: 0, babies: 0, flex: false, ages: [], from: iso(TODAY), to: iso(addDays(TODAY, 60)) });
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem("reisetinder:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem("reisetinder:" + k, JSON.stringify(v)); } catch {} },
 };
 let filters = Object.assign(DEFAULTS(), store.get("filters2", {}));
+if (filters.hours > 24) filters.hours = 24;
 let draft = structuredClone(filters);
 let liked = store.get("liked", []);
 let seen = store.get("seen", []);
@@ -1175,6 +1201,7 @@ const hoursLabel = h => { const H = Math.floor(h), m = Math.round((h - H) * 60);
 
 function nextDeparture(o, f) {
   let from = new Date(f.from + "T00:00"), to = new Date(f.to + "T00:00");
+  if (f.flex) { from = addDays(from, -2); to = addDays(to, 2); const t = new Date(iso(TODAY) + "T00:00"); if (from < t) from = t; }
   if (o.from) { const a = new Date(o.from + "T00:00"); if (a > from) from = a; }
   if (o.until) { const b = new Date(o.until + "T00:00"); if (b < to) to = b; }
   for (let d = new Date(from); d <= to; d = addDays(d, 1))
@@ -1184,8 +1211,9 @@ function nextDeparture(o, f) {
 function matches(o, f) {
   if (f.types.length && !f.types.some(t => o.types.includes(t))) return false;
   if (o.hours > f.hours) return false;
-  if (f.countries.length && !f.countries.includes(o.country)) return false;
-  if (f.kids > 0 && !o.kids) return false;
+  if (f.hours > 12) { if (f.regions?.length && !regionOf(o).some(x => f.regions.includes(x))) return false; }
+  else if (f.countries.length && !f.countries.includes(o.country)) return false;
+  if ((f.kids > 0 || f.babies > 0) && !o.kids) return false;
   return !!nextDeparture(o, f);
 }
 const results = f => OFFERS.filter(o => matches(o, f)).sort((a, b) => a.hours - b.hours);
@@ -1345,7 +1373,7 @@ function renderList() {
   }
   list.innerHTML = items.map(o => `<button class="row" data-id="${o.id}"><div class="thumb">${scene(o)}</div>
     <div class="t"><b>${o.place}</b><span>${o.hotel} · ${o.dur || o.nights + " N."}</span><span>${o.mode} ${hrs(o.hours)} · ${o.country}</span></div>
-    <div class="p">${chf(total(o, filters))}<small>${filters.adults + filters.kids} Pers.</small></div></button>`).join("");
+    <div class="p">${chf(total(o, filters))}<small>${filters.adults + filters.kids + (filters.babies || 0)} Pers.</small></div></button>`).join("");
   list.querySelectorAll(".row").forEach(b => b.onclick = () => openDetail(OFFERS.find(o => o.id === b.dataset.id)));
 }
 
@@ -1353,8 +1381,9 @@ function renderList() {
 function openDetail(o) {
   const f = filters, dep = nextDeparture(o, f) || nextDeparture(o, { from: iso(TODAY), to: iso(addDays(TODAY, 365)) });
   const ret = addDays(dep, o.nights), ag = AGENCIES[o.agency], isLiked = liked.includes(o.id);
-  const travellers = `${f.adults} Erw.${f.kids ? ` + ${f.kids} Kind${f.kids > 1 ? "er" : ""}` : ""}`;
+  const travellers = `${f.adults} Erw.${f.kids ? ` + ${f.kids} Kind${f.kids > 1 ? "er" : ""}` : ""}${f.babies ? ` + ${f.babies} Baby${f.babies > 1 ? "s" : ""}` : ""}`;
   const childLine = f.kids ? `<div><span>${f.kids} × Kind${f.ages.length ? ` (${f.ages.join(", ")} J.)` : ""}</span><span>${o.child == null ? "Preis beim Anbieter" : o.child ? chf(o.child * f.kids) : "gratis"}</span></div>` : "";
+  const babyLine = f.babies ? `<div><span>${f.babies} × Baby (unter 2 J.)</span><span>Preis beim Anbieter</span></div>` : "";
   $("#sheet").innerHTML = `
     <div class="hero"><div class="strip" id="strip">${photos(o).map(p => `<div><span class="hcap">${p.label}</span>${p.svg}</div>`).join("")}</div><button class="gnav prev" id="gprev" aria-label="Vorheriges Bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><button class="gnav next" id="gnext" aria-label="Nächstes Bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button><div class="dots" id="dots">${photos(o).map((_, i) => `<button aria-label="Bild ${i + 1}" class="${i ? "" : "on"}"></button>`).join("")}</div><button class="close" id="close" aria-label="Schliessen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button></div>
     <div class="body">
@@ -1376,7 +1405,7 @@ function openDetail(o) {
       <div class="box"><h3>Über das Angebot</h3><p>${o.text}</p></div>
       <div class="box"><h3>Inbegriffen</h3><ul class="incl">${o.incl.map(i => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg><span>${i}</span></li>`).join("")}</ul></div>
       <div class="box"><h3>Preis</h3><div class="pricing">
-        <div><span>${f.adults} × Erwachsene à ${chf(o.price)}</span><span>${chf(o.price * f.adults)}</span></div>${childLine}
+        <div><span>${f.adults} × Erwachsene à ${chf(o.price)}</span><span>${chf(o.price * f.adults)}</span></div>${childLine}${babyLine}
         <div class="tot"><span>Total</span><span>${chf(total(o, f))}</span></div></div>
         <p class="note" style="margin-top:10px">${o.was ? `Statt ${chf(o.was)} p.P. ` : ""}Ab-Preis pro Person bei 2 Erwachsenen laut ${ag.name}, Stand 8. Oktober 2026.${o.child == null && f.kids ? " Kinderpreise berechnet der Anbieter je nach Alter." : ""} Der verbindliche Preis wird beim Anbieter berechnet.</p></div>
       <div class="box advisor"><div class="avatar">${ag.name[0]}</div><div><b>Fragen zum Angebot?</b><small>Reiseberatung von ${ag.name} · online</small></div><button class="btn" id="open-chat">Chatten</button></div>
@@ -1449,34 +1478,65 @@ $("#composer").onsubmit = e => { e.preventDefault(); send($("#chat-input").value
 $("#chat-close").onclick = closeChat;
 
 /* ================= Filter ================= */
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[c]);
 function renderFilter() {
   const d = draft;
   $("#f-types").innerHTML = TYPES.map(t => `<button type="button" class="chip" aria-pressed="${d.types.includes(t)}" data-t="${t}">${t}</button>`).join("");
-  const countries = [...new Set(OFFERS.map(o => o.country))].sort((a, b) => a.localeCompare(b, "de"));
-  $("#f-countries").innerHTML = `<button type="button" class="chip" aria-pressed="${!d.countries.length}" data-c="">Alle Länder</button>` +
-    countries.map(c => `<button type="button" class="chip" aria-pressed="${d.countries.includes(c)}" data-c="${c}">${c}</button>`).join("");
-  $("#o-countries").textContent = d.countries.length ? `${d.countries.length} gewählt` : "";
+  if (d.hours > 12) {
+    const conts = [...new Set(OFFERS.map(o => regionOf(o)[0]))], regs = [...new Set(OFFERS.map(o => regionOf(o)[1]))];
+    $("#l-countries").textContent = "Region / Kontinent"; $("#f-tagwrap").hidden = true; $("#f-tag-note").hidden = true;
+    $("#f-countries").innerHTML = `<button type="button" class="chip" aria-pressed="${!d.regions.length}" data-r="">Alle Regionen</button>` +
+      conts.map(c => `<button type="button" class="chip cont" aria-pressed="${d.regions.includes(c)}" data-r="${c}">${c}</button>`).join("") +
+      regs.map(c => `<button type="button" class="chip" aria-pressed="${d.regions.includes(c)}" data-r="${c}">${c}</button>`).join("");
+    $("#o-countries").textContent = d.regions.length ? `${d.regions.length} gewählt` : "";
+  } else {
+    const countries = [...new Set(OFFERS.map(o => o.country))].sort((a, b) => a.localeCompare(b, "de"));
+    $("#l-countries").textContent = "Land"; $("#f-tagwrap").hidden = false;
+    $("#f-countries").innerHTML = `<button type="button" class="chip" aria-pressed="${!d.countries.length}" data-c="">Alle Länder</button>` +
+      countries.map(c => `<button type="button" class="chip" aria-pressed="${d.countries.includes(c)}" data-c="${c}">${c}</button>`).join("") +
+      d.countries.filter(c => !countries.includes(c)).map(c => `<button type="button" class="chip ctag" aria-pressed="true" data-c="${esc(c)}" aria-label="${esc(c)} entfernen">${esc(c)}<span aria-hidden="true">×</span></button>`).join("");
+    $("#o-countries").textContent = d.countries.length ? `${d.countries.length} gewählt` : "";
+    const none = d.countries.filter(c => !countries.includes(c));
+    $("#f-tag-note").hidden = !none.length; $("#f-tag-note").textContent = none.length ? `Für ${none.join(", ")} haben wir gerade noch keine Angebote. Wir zeigen sie, sobald welche da sind.` : "";
+  }
   $("#f-hours").value = d.hours; $("#o-hours").textContent = "bis " + hrs(d.hours);
   $("#o-adults").textContent = d.adults; $("#o-kids").textContent = d.kids;
   $("#ad-minus").disabled = d.adults <= 1; $("#ad-plus").disabled = d.adults >= 6; $("#ki-minus").disabled = d.kids <= 0; $("#ki-plus").disabled = d.kids >= 4;
-  $("#kids-ages").innerHTML = Array.from({ length: d.kids }, (_, i) => `<label for="age${i}">Alter Kind ${i + 1}<select id="age${i}" data-i="${i}">${Array.from({ length: 18 }, (_, a) => `<option ${d.ages[i] === a ? "selected" : ""} value="${a}">${a} J.</option>`).join("")}</select></label>`).join("");
+  $("#o-babies").textContent = d.babies; $("#ba-minus").disabled = d.babies <= 0; $("#ba-plus").disabled = d.babies >= Math.min(3, d.adults);
+  $("#f-flex").setAttribute("aria-pressed", !!d.flex);
+  $("#kids-ages").innerHTML = Array.from({ length: d.kids }, (_, i) => `<label for="age${i}">Alter Kind ${i + 1}<select id="age${i}" data-i="${i}">${Array.from({ length: 16 }, (_, a) => a + 2).map(a => `<option ${d.ages[i] === a ? "selected" : ""} value="${a}">${a} J.</option>`).join("")}</select></label>`).join("");
   $("#f-from").value = d.from; $("#f-to").value = d.to; $("#f-from").min = iso(TODAY); $("#f-to").min = d.from;
   const n = results(d).length;
   $("#apply").textContent = n ? `${n} Angebot${n === 1 ? "" : "e"} zeigen` : "Keine Angebote mit diesen Filtern";
   $("#apply").disabled = !n;
 }
 $("#f-types").onclick = e => { const t = e.target.closest("[data-t]")?.dataset.t; if (!t) return; draft.types = draft.types.includes(t) ? draft.types.filter(x => x !== t) : [...draft.types, t]; renderFilter(); };
-$("#f-countries").onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; const c = b.dataset.c;
+$("#f-countries").onclick = e => { const rb = e.target.closest("[data-r]");
+  if (rb) { const c = rb.dataset.r; draft.regions = !c ? [] : draft.regions.includes(c) ? draft.regions.filter(x => x !== c) : [...draft.regions, c]; return renderFilter(); }
+  const b = e.target.closest("[data-c]"); if (!b) return; const c = b.dataset.c;
   draft.countries = !c ? [] : draft.countries.includes(c) ? draft.countries.filter(x => x !== c) : [...draft.countries, c]; renderFilter(); };
+const COUNTRY_LIST = ["Ägypten", "Albanien", "Argentinien", "Australien", "Belgien", "Bulgarien", "Brasilien", "Chile", "China", "Costa Rica", "Dänemark", "Deutschland", "Dominikanische Republik", "Ecuador", "England", "Estland", "Finnland", "Frankreich", "Georgien", "Griechenland", "Indien", "Indonesien", "Irland", "Island", "Italien", "Japan", "Jordanien", "Kanada", "Kap Verde", "Kenia", "Kolumbien", "Kroatien", "Kuba", "Lettland", "Litauen", "Malaysia", "Malediven", "Malta", "Marokko", "Mauritius", "Mexiko", "Montenegro", "Namibia", "Neuseeland", "Niederlande", "Norwegen", "Oman", "Österreich", "Peru", "Philippinen", "Polen", "Portugal", "Rumänien", "Schottland", "Schweden", "Schweiz", "Seychellen", "Singapur", "Slowenien", "Spanien", "Sri Lanka", "Südafrika", "Südkorea", "Tansania", "Thailand", "Tschechien", "Tunesien", "Türkei", "Ungarn", "USA", "Vereinigte Arabische Emirate", "Vietnam", "Zypern"];
+$("#country-list").innerHTML = COUNTRY_LIST.map(c => `<option value="${c}">`).join("");
+function addCountryTag() {
+  const inp = $("#f-country-in"), raw = inp.value.trim().replace(/,+$/, ""); if (!raw) return;
+  const c = COUNTRY_LIST.find(x => x.toLowerCase() === raw.toLowerCase()) || raw.charAt(0).toUpperCase() + raw.slice(1);
+  if (!draft.countries.includes(c)) draft.countries = [...draft.countries, c];
+  inp.value = ""; renderFilter(); $("#f-country-in").focus();
+}
+$("#f-country-in").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addCountryTag(); } });
+$("#f-country-in").addEventListener("change", () => { if (COUNTRY_LIST.includes($("#f-country-in").value)) addCountryTag(); });
+$("#f-country-add").onclick = addCountryTag;
 $("#f-hours").oninput = e => { draft.hours = +e.target.value; renderFilter(); };
-$("#ad-minus").onclick = () => { draft.adults--; renderFilter(); };
+$("#ad-minus").onclick = () => { draft.adults--; draft.babies = Math.min(draft.babies, draft.adults); renderFilter(); };
+$("#ba-minus").onclick = () => { draft.babies--; renderFilter(); };
+$("#ba-plus").onclick = () => { draft.babies++; renderFilter(); };
+$("#f-flex").onclick = () => { draft.flex = !draft.flex; renderFilter(); };
 $("#ad-plus").onclick = () => { draft.adults++; renderFilter(); };
 $("#ki-minus").onclick = () => { draft.kids--; draft.ages.length = draft.kids; renderFilter(); };
 $("#ki-plus").onclick = () => { draft.kids++; draft.ages.push(6); renderFilter(); };
 $("#kids-ages").onchange = e => { draft.ages[+e.target.dataset.i] = +e.target.value; };
 $("#f-from").onchange = e => { draft.from = e.target.value || iso(TODAY); if (draft.to < draft.from) draft.to = draft.from; renderFilter(); };
 $("#f-to").onchange = e => { draft.to = e.target.value || draft.from; renderFilter(); };
-$("#reset").onclick = () => { draft = DEFAULTS(); renderFilter(); };
 $("#filter-form").onsubmit = e => {
   e.preventDefault(); filters = structuredClone(draft); store.set("filters2", filters);
   seen = []; store.set("seen", seen); buildQueue(); show("deck");
@@ -1487,7 +1547,7 @@ function updateCount() { $("#count").textContent = liked.length || ""; }
 function updateSummary() {
   const f = filters, n = results(f).length;
   const dfmt = s => { const d = new Date(s + "T00:00"); return `${d.getDate()}.${d.getMonth() + 1}.`; };
-  $("#summary").innerHTML = `<strong>${queue.length} von ${n}</strong> übrig<span class="sd"><br>${f.adults} Erw.${f.kids ? ` · ${f.kids} Ki.` : ""} · bis ${hrs(f.hours)} · ${dfmt(f.from)}–${dfmt(f.to)}</span>`;
+  $("#summary").innerHTML = `<strong>${queue.length} von ${n}</strong> übrig<span class="sd"><br>${f.adults} Erw.${f.kids ? ` · ${f.kids} Ki.` : ""}${f.babies ? ` · ${f.babies} Baby` : ""} · bis ${hrs(f.hours)} · ${dfmt(f.from)}–${dfmt(f.to)}${f.flex ? " ±2" : ""}</span>`;
 }
 const isDesk = () => matchMedia("(min-width: 1000px)").matches;
 function show(v) {
