@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Veni Vidi Volo: Reiseangebote swipen wie bei Tinder.">
+<link rel="icon" type="image/png" href="logo-mark.png">
+<title>Veni Vidi Volo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<style>
+/* Layout: one phone-sized app column (deck / gemerkt / filter tabs) with a boarding-pass detail sheet sliding over it. */
+:root {
+  --bg: #EDE4D1;
+  --surface: #FBF7EE;
+  --surface-2: #F3EBDA;
+  --ink: #2B1D14;
+  --muted: #7B6652;
+  --line: #DACAAC;
+  --accent: #9E1B1E;
+  --accent-ink: #FFF6E3;
+  --like: #5E7F2C;
+  --nope: #9E1B1E;
+  --gold: #B8862B;
+  --purple: #4E1F52;
+  --vein: rgba(140, 110, 70, .13);
+  --shadow: 0 18px 40px -18px rgba(60, 35, 15, .5);
+  --display: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+  --body: "EB Garamond", "Garamond", "Georgia", serif;
+  --mono: "Cinzel", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17100D; --surface: #241914; --surface-2: #2E2019; --ink: #F1E5CC; --muted: #BBA486;
+    --line: #4A3628; --accent: #D2483A; --accent-ink: #1A0B07; --like: #93B95A; --nope: #E05A4B;
+    --gold: #D9AE52; --purple: #8A4C90; --vein: rgba(217, 174, 82, .07);
+    --shadow: 0 18px 40px -18px rgba(0,0,0,.85); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17100D; --surface: #241914; --surface-2: #2E2019; --ink: #F1E5CC; --muted: #BBA486;
+  --line: #4A3628; --accent: #D2483A; --accent-ink: #1A0B07; --like: #93B95A; --nope: #E05A4B;
+  --gold: #D9AE52; --purple: #8A4C90; --vein: rgba(217, 174, 82, .07);
+  --shadow: 0 18px 40px -18px rgba(0,0,0,.85); color-scheme: dark;
+}
+html, body { height: 100%; overflow: hidden; overflow: clip; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; overflow: hidden; }
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.app { height: 100%; max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; padding-inline: 16px; position: relative; }
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 10px; }
+.brand { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -.02em; display: flex; align-items: baseline; gap: 2px; }
+.brand b { color: var(--accent); }
+.hright { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.themebtn { flex: none; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; box-shadow: 0 4px 12px -6px rgba(0,0,0,.3); }
+.themebtn svg { width: 20px; height: 20px; }
+.themebtn .i-sun { display: none; color: #FFC24A; }
+.themebtn .i-moon { color: #6D5BFF; }
+.is-dark .themebtn .i-sun { display: block; } .is-dark .themebtn .i-moon { display: none; }
+.summary { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.35; min-width: 0; }
+.summary strong { color: var(--ink); font-weight: 600; }
+
+main { flex: 1; min-height: 0; position: relative; overflow: hidden; overflow: clip; margin-inline: -16px; padding-inline: 16px; }
+.view { position: absolute; inset: 0 16px; display: flex; flex-direction: column; }
+.view[hidden] { display: none !important; }
+
+/* ---------- Deck ---------- */
+.deck { position: relative; flex: 1; min-height: 0; margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.card { border: 1px solid rgba(255,255,255,.12); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fact { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(8px); }
+.fact svg { width: 14px; height: 14px; opacity: .9; }
+.pricetag { position: absolute; right: 16px; top: 26px; z-index: 3; text-align: right; color: #fff; }
+.pricetag small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .85; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+.pricetag b { display: inline-block; margin-top: 3px; font-family: var(--display); font-weight: 800; font-size: 22px; padding: 4px 12px; border-radius: 12px; background: var(--accent); color: #fff; box-shadow: 0 8px 20px -8px rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
+.ambient { display: none; position: fixed; inset: -15%; z-index: 0; filter: blur(50px) saturate(1.3); opacity: .45; pointer-events: none; transition: opacity .4s; }
+.ambient svg { width: 100%; height: 100%; }
+.app { z-index: 1; }
+.card {
+  position: absolute; inset: 0; border-radius: 22px; overflow: hidden; background: var(--surface);
+  box-shadow: var(--shadow); touch-action: none; user-select: none; -webkit-user-select: none;
+  display: flex; flex-direction: column; will-change: transform;
+  transition: transform .35s cubic-bezier(.2,.8,.3,1), opacity .35s;
+}
+.card.dragging { transition: none; }
+.card .art { position: relative; flex: 1; min-height: 0; }
+.card .ph { position: absolute; inset: 0; opacity: 0; transition: opacity .18s; }
+.card .ph.on { opacity: 1; }
+.card .ph svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.card .art::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(6,10,20,.35) 0, transparent 14%, transparent 38%, rgba(6,10,20,.55) 58%, rgba(6,10,20,.94) 100%); }
+.bars { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 3; display: flex; gap: 5px; }
+.bars span { flex: 1; height: 4px; border-radius: 4px; background: rgba(255,255,255,.35); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.bars span.on { background: #fff; }
+.card .cap { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.card.bump-l { animation: bumpL .25s; } .card.bump-r { animation: bumpR .25s; }
+@keyframes bumpL { 50% { transform: perspective(800px) rotateY(-5deg); } }
+@keyframes bumpR { 50% { transform: perspective(800px) rotateY(5deg); } }
+.card .over { position: absolute; left: 18px; right: 18px; bottom: 124px; color: #fff; z-index: 2; display: grid; gap: 4px; }
+.card .place { font-family: var(--display); font-weight: 800; font-size: clamp(36px, 11vw, 48px); text-shadow: 0 2px 16px rgba(0,0,0,.35); line-height: 1; letter-spacing: -.02em; text-wrap: balance; }
+.card .country { font-size: 14px; opacity: .9; font-weight: 500; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 11.5px; font-weight: 600; letter-spacing: .02em; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.18); color: #fff; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.28); }
+.card .meta-old { display: grid; grid-template-columns: repeat(3, 1fr); padding: 12px 16px 14px; gap: 8px; background: var(--surface); }
+.meta div { min-width: 0; }
+.meta small svg, .badge-lm svg { width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
+.badge-lm.right { display: flex; align-items: center; }
+.meta small { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.meta span { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meta .price span { color: var(--accent); }
+.stamp {
+  position: absolute; top: 26px; z-index: 3; font-family: var(--display); font-weight: 800; font-size: 40px; letter-spacing: .06em;
+  padding: 4px 14px; border: 5px solid currentColor; border-radius: 10px; opacity: 0; pointer-events: none; background: rgba(255,255,255,.12);
+}
+.stamp.like { left: 20px; color: #3BE3A2; transform: rotate(-14deg); }
+.stamp.nope { right: 20px; color: #FF6B73; transform: rotate(14deg); }
+.badge-lm { position: absolute; top: 26px; left: 16px; z-index: 2; background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 6px; }
+.badge-lm.right { left: 16px; right: auto; background: rgba(6,14,20,.55); color: #fff; }
+
+.actions { position: absolute; left: 0; right: 0; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); z-index: 30; display: flex; justify-content: center; align-items: center; gap: 22px; pointer-events: none; }
+.actions .round { pointer-events: auto; }
+main:has(.sheet.open) .actions { opacity: 0; visibility: hidden; }
+.actions { transition: opacity .2s, visibility .2s; }
+.round { --ring: linear-gradient(135deg, #fff, #fff); width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; position: relative;
+  border: 3px solid transparent; background: linear-gradient(rgba(12,16,28,.62), rgba(12,16,28,.62)) padding-box, var(--ring) border-box;
+  backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 12px 30px -8px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18);
+  transition: transform .2s cubic-bezier(.3,1.6,.5,1), box-shadow .2s, background .15s; }
+.round svg { width: 42px; height: 42px; position: relative; z-index: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+.round:hover { transform: scale(1.08); }
+.round:active { transform: scale(.9); }
+.round.nope { --ring: linear-gradient(135deg, #FF8A4C, #FF4458 55%, #E01E5A); --glow: rgba(255, 68, 88, .7); }
+.round.like { --ring: linear-gradient(135deg, #B8F55A, #2BD99A 55%, #10B9B0); --glow: rgba(43, 217, 154, .75); }
+.round.nope { background: #FFFFFF; border: 0; color: #E5484D; box-shadow: 0 12px 28px -10px rgba(0,0,0,.6); backdrop-filter: none; }
+.round.nope svg path { stroke: #E5484D; }
+.round.like { background: #0FA97A; border: 0; box-shadow: 0 12px 28px -10px rgba(0,0,0,.6); backdrop-filter: none; }
+.round.like svg path { fill: #FFFFFF; }
+.round.small { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35); }
+.round.nope.hot { background: #E5484D; box-shadow: 0 0 0 6px rgba(229,72,77,.3), 0 16px 40px -6px rgba(229,72,77,.7); }
+.round.like.hot { background: #0FA97A; box-shadow: 0 0 0 6px rgba(15,169,122,.3), 0 16px 40px -6px rgba(15,169,122,.7); }
+.round.hot-old { background: var(--ring) padding-box, var(--ring) border-box; box-shadow: 0 0 0 6px color-mix(in srgb, var(--glow) 35%, transparent), 0 16px 40px -6px var(--glow); }
+.round.nope.hot svg path { stroke: #fff; }
+.round.like::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid #2BD99A; opacity: 0; }
+.round.like.pulse::after { animation: ring .6s ease-out; }
+@keyframes ring { from { opacity: .9; transform: scale(.9); } to { opacity: 0; transform: scale(1.6); } }
+.round.small { --ring: linear-gradient(135deg, #5FD4FF, #3B82F6 60%, #6D5BFF); width: 56px; height: 56px; color: #fff; }
+.round.small svg { width: 26px; height: 26px; }
+.hint-old { text-align: center; font-size: 12px; color: var(--muted); padding-bottom: 6px; }
+kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--surface); }
+
+.empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; border: 2px dashed var(--line); border-radius: 22px; }
+.empty h2 { font-family: var(--display); font-size: 24px; margin: 0 0 8px; text-wrap: balance; }
+.empty p { color: var(--muted); margin: 0 0 18px; max-width: 30ch; margin-inline: auto; line-height: 1.5; }
+.btn { border: 0; border-radius: 12px; padding: 13px 18px; font-weight: 700; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* ---------- Gemerkt list ---------- */
+.list { overflow-y: auto; grid-template-columns: minmax(0, 1fr); display: grid; gap: 10px; padding-bottom: 16px; align-content: start; }
+.row { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px; text-align: left; width: 100%; }
+.row .thumb { width: 84px; height: 72px; border-radius: 10px; overflow: hidden; position: relative; }
+.row .thumb svg { width: 100%; height: 100%; display: block; }
+.row .t { min-width: 0; }
+.row .t b { font-family: var(--display); font-size: 17px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .t span { font-size: 12.5px; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .p { text-align: right; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; padding-right: 6px; }
+.row .p small { display: block; color: var(--muted); font-weight: 500; font-size: 11px; }
+.section-h { display: flex; justify-content: space-between; align-items: baseline; padding-block: 4px 10px; gap: 10px; }
+.section-h h2 { font-family: var(--display); font-size: 22px; margin: 0; }
+.linkbtn { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; padding: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 10px; align-self: flex-start; }
+.seg button { border: 0; background: transparent; padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+/* ---------- Filter ---------- */
+.filter { overflow-x: hidden; overflow-y: auto; grid-template-columns: minmax(0, 1fr); padding-bottom: 20px; display: grid; gap: 22px; align-content: start; }
+.fgroup { display: grid; gap: 10px; }
+.fgroup > label, .fgroup > .lbl { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.fgroup .lbl output { color: var(--ink); font-family: var(--mono); letter-spacing: 0; text-transform: none; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 13px; font-size: 13.5px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.steppers { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.stepper { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.stepper div small { display: block; font-size: 11px; color: var(--muted); }
+.stepper div b { font-size: 15px; }
+.stepper .ctl { display: flex; align-items: center; gap: 10px; }
+.stepper button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); font-size: 18px; line-height: 1; display: grid; place-items: center; }
+.stepper button:disabled { opacity: .35; cursor: default; }
+.stepper output { font-family: var(--mono); font-weight: 600; font-size: 16px; min-width: 1.2ch; text-align: center; }
+.kids-ages { display: flex; flex-wrap: wrap; gap: 8px; }
+.kids-ages label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+select, input[type=date] { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0; width: 100%; }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dates label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+.sticky-cta { position: sticky; bottom: 0; padding-block: 12px 4px; background: linear-gradient(transparent, var(--bg) 30%); }
+.sticky-cta .btn { width: 100%; font-size: 16px; }
+
+/* ---------- Bottom nav ---------- */
+nav.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; margin-bottom: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; }
+nav.tabs button { border: 0; background: none; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--muted); position: relative; }
+nav.tabs button svg { width: 18px; height: 18px; flex: none; }
+nav.tabs button[aria-current="page"] { color: var(--ink); background: var(--surface); box-shadow: 0 2px 8px -3px rgba(16,32,43,.3); }
+nav.tabs button[aria-current="page"] svg { color: var(--accent); }
+.count { position: static; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 6px; font-variant-numeric: tabular-nums; }
+.count:empty { display: none; }
+
+/* ---------- Detail sheet ---------- */
+.sheet { position: absolute; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; transform: translateY(100%); transition: transform .35s cubic-bezier(.2,.8,.3,1); }
+.sheet.open { transform: none; visibility: visible; transition: transform .35s cubic-bezier(.2,.8,.3,1), visibility 0s; }
+.sheet:not(.open) { visibility: hidden; transition: transform .35s cubic-bezier(.2,.8,.3,1), visibility 0s .35s; }
+.sheet .hero { position: relative; height: 300px; }
+.strip { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.strip > div { flex: 0 0 100%; scroll-snap-align: start; position: relative; }
+.strip svg { width: 100%; height: 100%; display: block; }
+.hcap { position: absolute; right: 12px; top: 16px; z-index: 1; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: rgba(6,14,20,.5); padding: 5px 9px; border-radius: 6px; }
+.gnav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(6,14,20,.5); color: #fff; display: grid; place-items: center; backdrop-filter: blur(6px); }
+.gnav svg { width: 22px; height: 22px; }
+.gnav.prev { left: 12px; } .gnav.next { right: 12px; }
+.strip { cursor: pointer; }
+.dots { position: absolute; left: 0; right: 0; bottom: 48px; display: flex; justify-content: center; gap: 6px; }
+.dots button { width: 8px; height: 8px; padding: 0; border-radius: 50%; border: 0; background: rgba(255,255,255,.5); }
+.dots button.on { background: #fff; width: 22px; border-radius: 4px; }
+.sheet .close { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(6,14,20,.55); color: #fff; display: grid; place-items: center; }
+.sheet .body { padding: 0 16px 24px; display: grid; gap: 18px; margin-top: -36px; position: relative; }
+.pass { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.pass .head { padding: 18px 18px 14px; display: grid; gap: 6px; }
+.pass .head h1 { font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1.05; margin: 0; letter-spacing: -.02em; text-wrap: balance; }
+.pass .head .sub { color: var(--muted); font-size: 14px; }
+.stars { color: #E9A23B; letter-spacing: 2px; font-size: 14px; }
+.route { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px 18px; border-top: 1px dashed var(--line); }
+.iata { font-family: var(--mono); font-weight: 600; font-size: 26px; line-height: 1; }
+.iata small { display: block; font-family: var(--body); font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+.route .line { position: relative; height: 2px; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 11px); }
+.route .line span { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--surface); padding: 0 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.perf { position: relative; height: 0; border-top: 2px dashed var(--line); margin-inline: 14px; }
+.perf::before, .perf::after { content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); }
+.perf::before { left: -26px; } .perf::after { right: -26px; }
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; padding: 16px 18px 18px; }
+.kv div { min-width: 0; }
+.kv small { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+.kv b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+.box h3 { margin: 0 0 10px; font-family: var(--display); font-size: 18px; }
+.box p { margin: 0; line-height: 1.55; color: var(--muted); }
+.incl { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.incl li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; line-height: 1.4; }
+.incl li svg { width: 18px; height: 18px; color: var(--like); margin-top: 1px; }
+.pricing { display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.pricing div { display: flex; justify-content: space-between; gap: 12px; }
+.pricing .tot { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; font-weight: 700; font-size: 18px; }
+.pricing .tot span:last-child { color: var(--accent); }
+.bookbar { position: sticky; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.bookbar .pp small { display: block; color: var(--muted); font-size: 11.5px; }
+.bookbar .pp b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.bookbar a { text-decoration: none; text-align: center; }
+.bookbar { grid-template-columns: 1fr auto auto; }
+.chatbtn { width: 46px; height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); display: grid; place-items: center; color: var(--ink); position: relative; }
+.chatbtn svg { width: 22px; height: 22px; }
+.chatbtn .dot { position: absolute; top: 8px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--like); border: 2px solid var(--surface-2); }
+.advisor { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-family: var(--display); color: #fff; background: linear-gradient(135deg, #5FD4FF, #3B82F6 60%, #6D5BFF); position: relative; flex: none; }
+.avatar::after { content: ""; position: absolute; right: 0; bottom: 1px; width: 11px; height: 11px; border-radius: 50%; background: #2BD99A; border: 2px solid var(--surface); }
+.advisor b { display: block; } .advisor small { color: var(--muted); font-size: 12.5px; }
+.advisor .btn { padding: 10px 14px; }
+.chat { position: absolute; inset: 0; z-index: 70; background: var(--bg); display: flex; flex-direction: column; transform: translateY(100%); transition: transform .3s cubic-bezier(.2,.8,.3,1); visibility: hidden; }
+.chat.open { transform: none; visibility: visible; }
+.chat header { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: center; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.chat header button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface-2); display: grid; place-items: center; }
+.chat header b { display: block; font-size: 15px; } .chat header small { color: var(--muted); font-size: 12px; }
+.msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.msg { max-width: 80%; padding: 10px 13px; border-radius: 18px; line-height: 1.45; font-size: 14.5px; white-space: pre-line; }
+.msg.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.msg.me { align-self: flex-end; background: #3E7BFA; color: #fff; border-bottom-right-radius: 6px; }
+.msg.typing { display: flex; gap: 4px; padding: 14px; }
+.msg.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
+.msg.typing i:nth-child(2) { animation-delay: .15s; } .msg.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+.demo-note { align-self: center; font-size: 11.5px; color: var(--muted); text-align: center; max-width: 34ch; line-height: 1.4; }
+.quick { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; }
+.quick button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
+.composer { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+.composer input { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px; min-width: 0; }
+.composer button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #3E7BFA; color: #fff; display: grid; place-items: center; }
+.note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.toast { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transition: .25s; pointer-events: none; z-index: 30; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%); }
+
+/* ---------- Match ---------- */
+[hidden] { display: none !important; }
+.match { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(circle at 50% 40%, rgba(240, 83, 63, .45), rgba(15, 27, 45, .94) 68%); backdrop-filter: blur(8px); text-align: center; color: #fff; }
+.match canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.match .inner { position: relative; display: grid; gap: 18px; justify-items: center; max-width: 420px; width: 100%; animation: pop .55s cubic-bezier(.2,1.4,.4,1) both; }
+.match h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(54px, 17vw, 84px); line-height: .9; letter-spacing: -.03em; transform: rotate(-6deg);
+  color: #FFD36B; text-wrap: balance; }
+.match .pair { display: flex; align-items: center; justify-content: center; margin-block: 8px; }
+.match .pic { width: 128px; height: 128px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 14px 30px rgba(0,0,0,.45); }
+.match .pic svg { width: 100%; height: 100%; display: block; }
+.match .pic.you { display: grid; place-items: center; background: #0FA97A; margin-left: -22px; }
+.match .pic.you svg { width: 60px; height: 60px; }
+.match p { margin: 0; font-size: 17px; line-height: 1.45; opacity: .95; max-width: 30ch; }
+.match p b { font-weight: 700; }
+.match .btns { display: grid; gap: 10px; width: 100%; max-width: 320px; margin-top: 6px; }
+.match .btn { font-size: 16px; padding: 15px; border-radius: 999px; }
+.match .btn.primary { background: #F0533F; color: #fff; }
+.match .btn.ghost { color: #fff; border-color: rgba(255,255,255,.5); }
+@keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+
+
+/* ---------- Roma: Marmor, Gold, Kaiserrot ---------- */
+body { font-size: 16px;
+  background:
+    linear-gradient(118deg, transparent 38%, var(--vein) 38.6%, transparent 40.5%),
+    linear-gradient(152deg, transparent 61%, var(--vein) 61.4%, transparent 62.8%),
+    linear-gradient(74deg, transparent 72%, var(--vein) 72.3%, transparent 73.4%),
+    radial-gradient(1100px 600px at 12% -10%, color-mix(in srgb, var(--surface) 75%, transparent), transparent 62%),
+    radial-gradient(900px 700px at 105% 110%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 60%),
+    var(--bg); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline-color: var(--gold); }
+header.top { padding-block: 12px 6px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: .04em; align-items: center; gap: 8px; color: var(--ink); line-height: 1; }
+.brand .laurel { width: 38px; height: 38px; flex: none; color: var(--gold); }
+.brand .bt { display: grid; gap: 4px; }
+.brand i { font-style: normal; color: var(--gold); margin-inline: .22em; }
+.brand b { color: var(--accent); font-weight: 800; }
+.brand small { font-family: var(--display); font-size: 9.5px; letter-spacing: .2em; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.meander { display: block; width: 100%; height: 12px; color: var(--gold); opacity: .8; margin-bottom: 10px; flex: none; }
+.summary { font-size: 13px; font-style: italic; }
+.themebtn { border-radius: 6px; border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
+.themebtn .i-moon { color: var(--purple); } .themebtn .i-sun { color: var(--gold); }
+
+nav.tabs { border-radius: 6px; border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+nav.tabs button { font-family: var(--display); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; border-radius: 4px; }
+nav.tabs button[aria-current="page"] { color: var(--accent); box-shadow: inset 0 -2px 0 var(--gold), 0 2px 8px -3px rgba(60,35,15,.3); }
+.count { background: var(--gold); color: #fff; font-family: var(--body); }
+
+/* Karte wie ein gerahmtes Fresko */
+.card { border-radius: 12px; border: 1px solid color-mix(in srgb, var(--gold) 70%, transparent); background: #1C130E; }
+.card::before { content: ""; position: absolute; inset: 7px; z-index: 4; pointer-events: none; border: 1.5px solid rgba(233, 196, 106, .75); border-radius: 7px; box-shadow: inset 0 0 0 3px rgba(20,12,8,.18), inset 0 0 0 4px rgba(233,196,106,.35); }
+.bars { top: 16px; left: 18px; right: 18px; }
+.bars span { height: 3px; border-radius: 1px; }
+.bars span.on { background: #F3D27A; }
+.badge-lm, .badge-lm.right { top: 30px; left: 20px; border-radius: 3px; font-family: var(--display); font-size: 10.5px; letter-spacing: .1em; border: 1px solid rgba(233,196,106,.5); }
+.pricetag { top: 28px; right: 20px; }
+.pricetag small { font-family: var(--display); letter-spacing: .14em; }
+.pricetag b { font-family: var(--display); font-weight: 700; border-radius: 4px; background: var(--accent); border: 1.5px solid #E9C46A; color: #FFF6E3; }
+.card .cap { font-family: var(--display); letter-spacing: .18em; color: #F3D27A; opacity: 1; }
+.card .place { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 9.2vw, 42px); letter-spacing: .02em; }
+.card .country { font-size: 16px; font-style: italic; }
+.fact { border-radius: 4px; font-size: 14px; border-color: rgba(233,196,106,.35); }
+.tag { border-radius: 3px; font-family: var(--display); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; border-color: rgba(233,196,106,.4); }
+.stamp { font-family: var(--display); font-weight: 800; border-style: double; border-width: 7px; border-radius: 4px; letter-spacing: .12em; top: 34px; }
+.stamp.like { color: #F3D27A; } .stamp.nope { color: #FF7A66; }
+.card .art::after { background: linear-gradient(180deg, rgba(20,10,6,.4) 0, transparent 15%, transparent 38%, rgba(25,12,6,.55) 58%, rgba(22,10,5,.95) 100%); }
+
+/* Knöpfe: Marmor-Medaillon, Kaiserrot mit Gold, Purpur */
+.round.nope { background: radial-gradient(circle at 35% 30%, #FFFFFF, #F1E8D6 60%, #DCCBA8); border: 3px solid #C9A04A; }
+.round.nope svg path { stroke: #9E1B1E; }
+.round.like { background: radial-gradient(circle at 35% 30%, #C9352D, #9E1B1E 55%, #6E0F12); border: 3px solid #E0B85A; }
+.round.like svg path { fill: #F6D77C; }
+.round.like::after { border-color: #E0B85A; }
+.round.small { background: radial-gradient(circle at 35% 30%, #6E3474, #4E1F52 60%, #33123A); border: 2px solid #D9AE52; color: #F6D77C; }
+.round.nope.hot { background: #9E1B1E; box-shadow: 0 0 0 6px rgba(158,27,30,.3), 0 16px 40px -6px rgba(158,27,30,.7); }
+.round.nope.hot svg path { stroke: #FFF6E3; }
+.round.like.hot { background: #B3261E; box-shadow: 0 0 0 6px rgba(224,184,90,.4), 0 16px 40px -6px rgba(224,184,90,.8); }
+
+/* Allgemein */
+.btn { border-radius: 6px; font-family: var(--display); font-weight: 700; letter-spacing: .06em; }
+.btn:not(.ghost) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 70%, transparent), 0 6px 16px -8px rgba(60,20,10,.6); }
+.empty { border-radius: 10px; border-color: color-mix(in srgb, var(--gold) 50%, var(--line)); }
+.empty h2, .section-h h2, .box h3 { font-family: var(--display); font-weight: 700; letter-spacing: .03em; }
+.section-h h2::after { content: ""; display: block; width: 46px; height: 2px; margin-top: 6px; background: linear-gradient(90deg, var(--gold), transparent); }
+.linkbtn { font-style: italic; font-size: 14px; }
+.seg { border-radius: 4px; }
+.seg button { font-family: var(--display); font-size: 11.5px; letter-spacing: .08em; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.row { border-radius: 8px; }
+.row .thumb { border-radius: 40px 40px 4px 4px; border: 1.5px solid color-mix(in srgb, var(--gold) 70%, transparent); }
+.row .t b { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.row .t span { font-size: 14px; font-style: italic; }
+.row .p { font-family: var(--display); }
+.fgroup > label, .fgroup > .lbl { font-family: var(--display); font-size: 11.5px; letter-spacing: .14em; color: var(--muted); }
+.chip { border-radius: 4px; font-size: 15px; font-weight: 500; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--gold); }
+input[type=range] { accent-color: var(--accent); }
+.stepper, select, input[type=date] { border-radius: 6px; }
+.stepper div b { font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: .04em; }
+.stepper button { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); }
+
+/* Angebot */
+.sheet .close, .gnav, .hcap { border: 1px solid rgba(233,196,106,.5); }
+.hcap { border-radius: 3px; font-family: var(--display); }
+.dots button.on { background: #F3D27A; }
+.pass { border-radius: 10px; border-top: 4px solid var(--accent); box-shadow: var(--shadow), inset 0 0 0 1px color-mix(in srgb, var(--gold) 40%, transparent); }
+.pass .head h1 { font-family: var(--display); font-weight: 700; letter-spacing: .02em; }
+.pass .head .sub { font-style: italic; font-size: 15px; }
+.stars { color: var(--gold); }
+.iata { font-weight: 700; letter-spacing: .04em; }
+.route .line { background: repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 11px); }
+.route, .perf { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.kv small, .bookbar .pp small { font-family: var(--display); letter-spacing: .12em; }
+.kv b { font-weight: 600; font-size: 16px; }
+.box { border-radius: 10px; }
+.box h3::after { content: ""; display: block; width: 36px; height: 2px; margin-top: 6px; background: linear-gradient(90deg, var(--gold), transparent); }
+.pricing .tot span:last-child, .bookbar .pp b { font-family: var(--display); }
+.chatbtn { border-radius: 6px; }
+.avatar { background: radial-gradient(circle at 35% 30%, #6E3474, #4E1F52); border: 1.5px solid #D9AE52; color: #F6D77C; }
+.chat header b { font-family: var(--display); letter-spacing: .03em; }
+.msg { font-size: 16px; border-radius: 14px; }
+.msg.me { background: var(--accent); color: #FFF6E3; }
+.quick button { border-radius: 4px; font-size: 14px; }
+.composer button { background: var(--accent); }
+.composer input { border-radius: 6px; }
+.toast { border-radius: 4px; font-family: var(--display); letter-spacing: .04em; }
+
+/* Match: Triumph in Purpur und Gold */
+.match { background: radial-gradient(circle at 50% 38%, rgba(158, 27, 30, .55), rgba(40, 12, 38, .95) 70%); }
+.match h2 { font-family: var(--display); font-weight: 800; transform: none; font-size: clamp(34px, 10.5vw, 58px); line-height: 1.05; letter-spacing: .03em; color: #F3D27A; text-shadow: 0 3px 18px rgba(0,0,0,.45); }
+.match h2 small { display: block; font-size: 15px; letter-spacing: .32em; text-transform: uppercase; color: #FFF6E3; opacity: .85; margin-bottom: 10px; font-weight: 600; }
+.match .pic { border-radius: 64px 64px 8px 8px; border: 3px solid #E0B85A; }
+.match .pic.you { background: radial-gradient(circle at 35% 30%, #C9352D, #9E1B1E 55%, #6E0F12); }
+.match .pic.you svg path { fill: #F6D77C; }
+.match p { font-size: 18px; }
+.match .btn.primary { background: #9E1B1E; color: #FFF6E3; }
+.match .btn.ghost { border-color: rgba(233,196,106,.6); }
+.match .btn { border-radius: 6px; }
+@media (min-width: 1000px) {
+  .brand { font-size: 26px; } .brand .laurel { width: 48px; height: 48px; } .brand small { font-size: 11px; }
+  #v-filter, #v-saved { border-radius: 10px; border-top: 3px solid var(--gold); }
+  .sheet { border-radius: 14px; } .chat { border-radius: 12px; }
+  .card .place { font-size: 46px; }
+}
+
+@media (min-width: 1000px) { .summary { white-space: nowrap; } }
+@media (max-width: 999px) { .summary .sd { display: none; } .summary { max-width: 72px; line-height: 1.2; } }
+.bookbar .pp small { white-space: nowrap; font-size: 10.5px; }
+.bookbar .pp b { white-space: nowrap; }
+.bookbar .btn { font-size: 13.5px; letter-spacing: .03em; padding: 12px 14px; }
+.match h2 .l { display: block; white-space: nowrap; }
+.match h2 { font-size: clamp(30px, 9.6vw, 58px); }
+/* ---------- Schlichter ---------- */
+body { background: var(--bg); }
+.meander { opacity: .35; height: 10px; }
+.card::before { display: none; }
+.card { border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+.badge-lm, .badge-lm.right, .pricetag b, .fact, .tag, .hcap, .sheet .close, .gnav { border: 0; }
+.fact { background: rgba(255,255,255,.12); backdrop-filter: none; }
+.tag { background: transparent; padding-inline: 0; opacity: .8; }
+.stamp { border-style: solid; border-width: 4px; }
+.round.nope { background: #FBF7EE; border: 2px solid #D9C9A6; }
+.round.like { background: #9E1B1E; border: 0; }
+.round.small { background: #4E1F52; border: 0; }
+.btn:not(.ghost) { box-shadow: none; }
+.section-h h2::after, .box h3::after { display: none; }
+.pass { border-top-width: 3px; box-shadow: var(--shadow); }
+.row .thumb { border: 0; }
+.chip[aria-pressed="true"] { border-color: var(--accent); }
+.match { background: rgba(30, 12, 18, .94); }
+.match .pic { border-width: 2px; }
+/* ---------- Logo-Gold ---------- */
+:root { --gold-grad: linear-gradient(180deg, #F6CF7A 0%, #D9A048 45%, #A8691F 80%, #8A5418 100%); --accent: #A8691F; --accent-ink: #2B1A08; --gold: #B8802E; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent: #E0A84E; --accent-ink: #1E1206; --gold: #D9A04A; } }
+:root[data-theme="dark"] { --accent: #E0A84E; --accent-ink: #1E1206; --gold: #D9A04A; }
+.brand { margin: 0; display: grid; gap: 5px; justify-items: start; font-size: inherit; }
+.brand .logo { display: block; width: min(250px, 58vw); height: auto; filter: drop-shadow(0 2px 3px rgba(80, 45, 10, .25)); }
+.brand small { font-family: var(--display); font-size: 9.5px; letter-spacing: .24em; color: var(--muted); font-weight: 600; padding-left: 3px; }
+.btn:not(.ghost), .pricetag b, .chip[aria-pressed="true"], .seg button[aria-pressed="true"], .count { background: var(--gold-grad); color: #2B1A08; border-color: #A8691F; text-shadow: 0 1px 0 rgba(255,235,190,.5); }
+.pricetag b { box-shadow: 0 8px 20px -8px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,240,200,.7); }
+.btn:not(.ghost) { box-shadow: inset 0 1px 0 rgba(255,240,200,.7), 0 6px 16px -8px rgba(90,50,10,.6); }
+nav.tabs button[aria-current="page"], nav.tabs button[aria-current="page"] svg { color: #A8691F; }
+:root[data-theme="dark"] nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] svg { color: #E0A84E; }
+.round.like { background: var(--gold-grad); box-shadow: inset 0 2px 0 rgba(255,240,200,.7), 0 12px 28px -10px rgba(0,0,0,.6); }
+.round.like svg path { fill: #FFF8E8; }
+.round.like svg { filter: drop-shadow(0 1px 2px rgba(90,50,10,.6)); }
+.round.like.hot { background: var(--gold-grad); box-shadow: 0 0 0 6px rgba(224,168,78,.35), 0 16px 40px -6px rgba(224,168,78,.8); }
+.round.small { background: #2E1F14; color: #E8B860; border: 1.5px solid #B8802E; }
+.round.nope { border-color: #D9B877; }
+.avatar { background: #2E1F14; color: #E8B860; border-color: #B8802E; }
+.msg.me, .composer button { background: #A8691F; color: #FFF8E8; }
+.pass { border-top-color: #C88A32; }
+.match { background: radial-gradient(circle at 50% 40%, rgba(120, 72, 20, .55), rgba(18, 11, 6, .96) 70%); }
+.match h2 { display: grid; justify-items: center; }
+.match .mlogo { width: min(380px, 88vw); height: auto; filter: drop-shadow(0 4px 14px rgba(0,0,0,.5)); }
+.match .pic.you { background: var(--gold-grad); }
+.match .pic.you svg path { fill: #FFF8E8; }
+.match .btn.primary { background: var(--gold-grad); color: #2B1A08; }
+.stamp.like { color: #F3C46E; }
+.card .cap, .bars span.on { color: #F3C46E; }
+@media (min-width: 1000px) { .brand .logo { width: 340px; } .brand small { font-size: 11px; } }
+/* ---------- Modern ---------- */
+:root { --display: "Manrope", system-ui, sans-serif; --body: "Manrope", system-ui, sans-serif; --mono: "Manrope", system-ui, sans-serif;
+  --bg: #F6F3EE; --surface: #FFFFFF; --surface-2: #F1ECE4; --line: #E8E1D6; --ink: #1C1712; --muted: #7A7064; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0E0C0A; --surface: #1A1714; --surface-2: #24201B; --line: #312B24; --ink: #F4EEE4; --muted: #A39887; } }
+:root[data-theme="dark"] { --bg: #0E0C0A; --surface: #1A1714; --surface-2: #24201B; --line: #312B24; --ink: #F4EEE4; --muted: #A39887; }
+body { font-size: 15px; background: var(--bg); }
+.meander { display: none; }
+header.top { padding-block: 14px 12px; }
+.summary { font-style: normal; font-size: 12px; }
+.themebtn { border-radius: 999px; border-color: var(--line); }
+nav.tabs { border-radius: 999px; border: 0; background: var(--surface-2); padding: 4px; }
+nav.tabs button { font-family: var(--body); font-size: 13px; font-weight: 700; letter-spacing: 0; text-transform: none; border-radius: 999px; }
+nav.tabs button[aria-current="page"] { box-shadow: 0 2px 10px -4px rgba(0,0,0,.25); }
+.card { border-radius: 28px; border: 0; }
+.bars { top: 12px; left: 14px; right: 14px; } .bars span { height: 4px; border-radius: 4px; }
+.badge-lm, .badge-lm.right { top: 28px; left: 16px; border-radius: 999px; font-family: var(--body); font-size: 11.5px; letter-spacing: 0; text-transform: none; font-weight: 700; padding: 6px 11px; background: rgba(0,0,0,.35); backdrop-filter: blur(10px); }
+.pricetag { top: 26px; right: 16px; }
+.pricetag small { font-family: var(--body); letter-spacing: .04em; font-weight: 700; }
+.pricetag b { font-family: var(--body); font-weight: 800; border-radius: 999px; padding: 5px 14px; }
+.card .cap { font-family: var(--body); letter-spacing: .08em; font-weight: 700; }
+.card .place { font-family: var(--body); font-weight: 800; letter-spacing: -.03em; font-size: clamp(34px, 10vw, 46px); }
+.card .country { font-style: normal; font-size: 14px; }
+.fact { border-radius: 999px; font-size: 13px; font-weight: 700; padding: 7px 12px; background: rgba(255,255,255,.14); backdrop-filter: blur(10px); }
+.tag { font-family: var(--body); letter-spacing: .04em; font-weight: 700; font-size: 11px; }
+.stamp { font-family: var(--body); border-style: solid; border-width: 4px; border-radius: 14px; letter-spacing: .04em; }
+.round.nope { background: #FFFFFF; border: 0; box-shadow: 0 14px 30px -10px rgba(0,0,0,.55); }
+.round.small { border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.2); color: #fff; backdrop-filter: blur(12px); }
+.btn { border-radius: 999px; font-family: var(--body); font-weight: 800; letter-spacing: 0; text-shadow: none; }
+.btn:not(.ghost), .pricetag b, .chip[aria-pressed="true"], .seg button[aria-pressed="true"], .count { text-shadow: none; }
+.empty { border-radius: 24px; }
+.empty h2, .section-h h2, .box h3, .pass .head h1, .row .t b, .stepper div b, .chat header b { font-family: var(--body); font-weight: 800; letter-spacing: -.02em; }
+.linkbtn, .row .t span, .pass .head .sub { font-style: normal; font-size: 13px; }
+.seg { border-radius: 999px; border: 0; background: var(--surface-2); padding: 3px; }
+.seg button { font-family: var(--body); font-size: 13px; letter-spacing: 0; border-radius: 999px; }
+.row { border-radius: 20px; border-color: var(--line); }
+.row .thumb { border-radius: 14px; }
+.row .p { font-family: var(--body); font-weight: 800; }
+.fgroup > label, .fgroup > .lbl { font-family: var(--body); font-size: 12px; letter-spacing: .06em; font-weight: 800; }
+.chip { border-radius: 999px; font-size: 13.5px; font-weight: 600; }
+.stepper, select, input[type=date] { border-radius: 16px; }
+.hcap { border-radius: 999px; font-family: var(--body); letter-spacing: .02em; text-transform: none; }
+.pass { border-radius: 24px; border-top: 0; }
+.iata { font-family: var(--body); font-weight: 800; letter-spacing: -.01em; }
+.route .line span, .scale, .fgroup .lbl output, .stepper output { font-family: var(--body); }
+.kv small, .bookbar .pp small { font-family: var(--body); letter-spacing: .06em; font-weight: 700; }
+.box { border-radius: 20px; }
+.pricing .tot span:last-child, .bookbar .pp b { font-family: var(--body); font-weight: 800; }
+.chatbtn { border-radius: 999px; }
+.msg { font-size: 14.5px; border-radius: 20px; }
+.quick button, .composer input { border-radius: 999px; }
+.toast { border-radius: 999px; font-family: var(--body); letter-spacing: 0; }
+.match .pic { border-radius: 50%; border: 3px solid #fff; }
+.match h2 small { font-family: var(--body); letter-spacing: .2em; font-weight: 800; }
+.match .btn { border-radius: 999px; }
+kbd { font-family: var(--body); }
+@media (min-width: 1000px) {
+  #v-filter, #v-saved { border-radius: 28px; border-top: 1px solid var(--line); box-shadow: 0 20px 50px -30px rgba(0,0,0,.35); }
+  .sheet { border-radius: 28px; } .chat { border-radius: 22px; }
+}
+/* ---------- Ferien: hell, Meer & Sonne ---------- */
+:root { --bg: #F5F9FC; --surface: #FFFFFF; --surface-2: #EEF4F8; --line: #E1EAF0; --ink: #12293A; --muted: #66798A;
+  --accent: #0BA5B8; --accent-ink: #FFFFFF; --like: #10B5A0; --gold: #0BA5B8;
+  --sea: linear-gradient(135deg, #26C6DA 0%, #0BA5B8 50%, #0A8FC2 100%);
+  --sun: linear-gradient(135deg, #FFB25B 0%, #FF7A59 55%, #FF5E7E 100%);
+  --shadow: 0 18px 40px -20px rgba(18, 60, 90, .35); }
+:root[data-theme="dark"] { --bg: #0D1820; --surface: #15232D; --surface-2: #1C2C37; --line: #29404D; --ink: #EAF3F7; --muted: #93A9B6; --accent: #3FD0E0; --accent-ink: #062027; --like: #3FD0B8; --gold: #3FD0E0; }
+body { background: radial-gradient(900px 420px at 50% -120px, #DDF3FA, transparent 70%), var(--bg); }
+:root[data-theme="dark"] body { background: radial-gradient(900px 420px at 50% -120px, #12313D, transparent 70%), var(--bg); }
+.brand .logo { filter: none; }
+.btn:not(.ghost), .chip[aria-pressed="true"], .seg button[aria-pressed="true"], .count, .match .btn.primary { background: var(--sea); color: #FFFFFF; border-color: transparent; text-shadow: none; }
+.btn:not(.ghost) { box-shadow: 0 10px 24px -12px rgba(11,165,184,.8); }
+.pricetag b { background: var(--sun); color: #FFFFFF; box-shadow: 0 8px 20px -8px rgba(255,94,126,.7); }
+nav.tabs { background: var(--surface); box-shadow: 0 4px 16px -10px rgba(18,60,90,.35); }
+nav.tabs button[aria-current="page"], nav.tabs button[aria-current="page"] svg, :root[data-theme="dark"] nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] svg { color: #FFFFFF; }
+nav.tabs button[aria-current="page"] { background: var(--sea); box-shadow: 0 6px 14px -8px rgba(11,165,184,.9); }
+.round.like { background: var(--sun); box-shadow: 0 14px 30px -10px rgba(255,94,126,.75); }
+.round.like svg path { fill: #FFFFFF; }
+.round.like::after { border-color: #FF7A59; }
+.round.like.hot { background: var(--sun); box-shadow: 0 0 0 6px rgba(255,122,89,.3), 0 16px 40px -6px rgba(255,94,126,.8); }
+.round.nope svg path { stroke: #4E6476; }
+.round.nope.hot { background: #4E6476; } .round.nope.hot svg path { stroke: #fff; }
+.card .cap { color: #9BEAF2; }
+.bars span.on { background: #FFFFFF; }
+.stamp.like { color: #5BF0D8; } .stamp.nope { color: #FF8FA3; }
+.avatar { background: var(--sea); color: #fff; border: 0; }
+.msg.me, .composer button { background: var(--accent); color: #fff; }
+.pass { border-top: 0; }
+.route .line { background: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 11px); }
+.stars, .card .country span { color: #FFB25B !important; }
+.match { background: radial-gradient(circle at 50% 35%, rgba(38,198,218,.55), rgba(10,40,60,.94) 72%); }
+.match .pic.you { background: var(--sun); }
+.match .pic.you svg path { fill: #fff; }
+.match .btn.ghost { border-color: rgba(255,255,255,.55); }
+.match .mlogo { filter: drop-shadow(0 3px 10px rgba(0,0,0,.35)); }
+.dots button.on { background: #FFFFFF; }
+.themebtn .i-moon { color: #0A8FC2; } .themebtn .i-sun { color: #FFB25B; }
+@media (min-width: 1000px) { #v-filter, #v-saved { border-top: 1px solid var(--line); } }
+/* ---------- Logo-Linie: Schwarz-Weiss, Papier, Serif ---------- */
+:root { --bg: #FAF8F4; --surface: #FFFFFF; --surface-2: #F2EEE7; --line: #E6E0D6; --ink: #141414; --muted: #6B655E;
+  --accent: #141414; --accent-ink: #FFFFFF; --like: #141414; --gold: #141414; --sand: #B8935A;
+  --serif: "Cormorant Garamond", "Times New Roman", serif; --shadow: 0 18px 40px -24px rgba(20,20,20,.45); }
+:root[data-theme="dark"] { --bg: #121110; --surface: #1C1B19; --surface-2: #262420; --line: #34312C; --ink: #F3EFE7; --muted: #A8A196; --accent: #F3EFE7; --accent-ink: #121110; --like: #F3EFE7; --gold: #F3EFE7; --sand: #D2B07A; }
+body, :root[data-theme="dark"] body { background: var(--bg); }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand .mark { width: 46px; height: auto; display: block; }
+.brand .logo { width: min(190px, 46vw); height: auto; display: block; }
+:root[data-theme="dark"] .brand img, :root[data-theme="dark"] .match .mlogo { filter: invert(1); }
+.themebtn .i-moon { color: var(--ink); } .themebtn .i-sun { color: var(--sand); }
+.empty h2, .section-h h2, .box h3, .pass .head h1, .row .t b, .card .place { font-family: var(--serif); font-weight: 600; letter-spacing: .01em; }
+.card .place { font-size: clamp(40px, 12vw, 54px); line-height: .95; }
+.pass .head h1 { font-size: 34px; } .section-h h2 { font-size: 28px; } .box h3 { font-size: 22px; } .row .t b { font-size: 20px; }
+.card .cap { color: #E8DCC6; letter-spacing: .14em; }
+.btn:not(.ghost), .chip[aria-pressed="true"], .seg button[aria-pressed="true"], .count, .match .btn.primary { background: var(--ink); color: var(--bg); box-shadow: none; }
+.btn.ghost { border-color: var(--ink); color: var(--ink); }
+nav.tabs { background: var(--surface); border: 1px solid var(--line); box-shadow: none; }
+nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] { background: var(--ink); box-shadow: none; }
+nav.tabs button[aria-current="page"], nav.tabs button[aria-current="page"] svg, :root[data-theme="dark"] nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] svg { color: var(--bg); }
+.pricetag small { color: #fff; }
+.pricetag b { background: #FFFFFF; color: #141414; box-shadow: 0 8px 20px -10px rgba(0,0,0,.6); }
+.badge-lm { background: #FFFFFF; color: #141414; }
+.round.like, .round.like.hot { background: #141414; box-shadow: 0 14px 30px -12px rgba(0,0,0,.7); border: 2px solid #FFFFFF; }
+.round.like svg path { fill: #FFFFFF; }
+.round.like::after { border-color: #FFFFFF; }
+.round.nope { background: #FFFFFF; } .round.nope svg path { stroke: #141414; }
+.round.nope.hot { background: #141414; } .round.nope.hot svg path { stroke: #fff; }
+.stamp.like { color: #FFFFFF; } .stamp.nope { color: #E8DCC6; }
+.stars, .card .country span { color: #E8C98A !important; }
+.pass .stars { color: var(--sand) !important; }
+.avatar { background: var(--ink); color: var(--bg); }
+.msg.me, .composer button { background: var(--ink); color: var(--bg); }
+.route .line { background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px); opacity: .5; }
+.incl li svg { color: var(--ink); }
+input[type=range] { accent-color: var(--ink); }
+.chatbtn .dot { background: var(--sand); }
+.section-h h2::after { display: block; content: "✦"; font-size: 11px; color: var(--sand); margin-top: 2px; background: none; width: auto; height: auto; }
+.match { background: rgba(250,248,244,.97); color: #141414; }
+:root[data-theme="dark"] .match { background: rgba(18,17,16,.97); color: #F3EFE7; }
+.match h2 small { color: var(--muted); opacity: 1; }
+.match .mlogo { width: min(300px, 74vw); filter: none; }
+.match .pic { border-color: var(--surface); box-shadow: 0 14px 30px -14px rgba(0,0,0,.5); }
+.match .pic.you { background: #141414; }
+.match .btn.ghost { color: var(--ink); border-color: var(--ink); }
+@media (min-width: 1000px) { .brand .mark { width: 56px; } .brand .logo { width: 250px; } }
+/* ---------- Farbakzente: Sonnenuntergang & Meer ---------- */
+:root { --bg: #F8F3EA; --surface-2: #F1E9DB; --sun: #E0623F; --sea: #1D6F80; --sand: #C98F45; }
+:root[data-theme="dark"] { --sun: #F08A66; --sea: #5FB3C2; --sand: #E0B070; }
+body { background: radial-gradient(800px 380px at 50% -140px, #FBE3CF, transparent 70%), var(--bg); }
+:root[data-theme="dark"] body { background: radial-gradient(800px 380px at 50% -140px, #2A1E17, transparent 70%), var(--bg); }
+nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] { background: var(--sea); }
+nav.tabs button[aria-current="page"], nav.tabs button[aria-current="page"] svg, :root[data-theme="dark"] nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] svg { color: #FFFFFF; }
+:root[data-theme="dark"] nav.tabs button[aria-current="page"], :root[data-theme="dark"] nav.tabs button[aria-current="page"] svg { color: #0E1A1D; }
+.chip[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--sea); color: #FFFFFF; border-color: var(--sea); }
+.btn:not(.ghost), .match .btn.primary { background: var(--sun); color: #FFFFFF; }
+:root[data-theme="dark"] .btn:not(.ghost), :root[data-theme="dark"] .chip[aria-pressed="true"], :root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #141414; }
+.count { background: var(--sun); color: #fff; }
+.round.like, .round.like.hot { background: var(--sun); border: 0; box-shadow: 0 14px 30px -10px rgba(224,98,63,.75); }
+.round.like::after { border-color: var(--sun); }
+.round.nope svg path { stroke: var(--sea); }
+.round.nope.hot { background: var(--sea); }
+.badge-lm { background: var(--sun); color: #FFFFFF; }
+.badge-lm.right { background: rgba(0,0,0,.4); color: #fff; }
+.card .cap { color: #FFD3B8; }
+.stamp.like { color: #FFB59A; } .stamp.nope { color: #9FE0EA; }
+.section-h h2::after { color: var(--sun); }
+.pricing .tot span:last-child, .row .p { color: var(--sun); }
+.incl li svg { color: var(--sea); }
+.route .line { background: repeating-linear-gradient(90deg, var(--sea) 0 6px, transparent 6px 11px); opacity: 1; }
+input[type=range] { accent-color: var(--sea); }
+.avatar, .msg.me, .composer button { background: var(--sea); color: #fff; }
+.chatbtn .dot { background: var(--sun); }
+.match { background: radial-gradient(circle at 50% 30%, rgba(251,214,190,.97), rgba(248,243,234,.97) 65%); }
+.match .pic.you { background: var(--sun); }
+.match .btn.ghost { color: var(--sea); border-color: var(--sea); }
+.themebtn .i-moon { color: var(--sea); } .themebtn .i-sun { color: var(--sun); }
+/* ---------- Desktop ---------- */
+.desk-only { display: none; }
+@media (min-width: 1000px) {
+  .app { max-width: 1320px; padding-inline: 32px; }
+  header.top { padding-block: 20px 16px; }
+  .brand { font-size: 32px; }
+  nav.tabs { display: none; }
+  .desk-only { display: block; }
+  main { display: grid; grid-template-columns: 330px minmax(400px, 1fr) 350px; gap: 28px; margin-inline: 0; padding-inline: 0; padding-bottom: 24px; }
+  .view, .view[hidden] { position: relative; inset: auto; display: flex !important; min-height: 0; }
+  #v-filter { grid-column: 1; grid-row: 1; } #v-deck { grid-column: 2; grid-row: 1; } #v-saved { grid-column: 3; grid-row: 1; }
+  #v-filter, #v-saved { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 20px 20px 0; box-shadow: var(--shadow); overflow: hidden; }
+  #v-saved { padding-bottom: 12px; }
+  .filter { padding-bottom: 0; }
+  .sticky-cta { background: linear-gradient(transparent, var(--surface) 30%); padding-bottom: 18px; }
+  .chip { background: var(--surface-2); }
+  .stepper { background: var(--surface-2); }
+  #v-deck { align-items: center; }
+  #v-deck .deck-wrap { width: 100%; max-width: 500px; }
+  .deck { margin-bottom: 12px; }
+  .card .place { font-size: 52px; }
+  .round:focus-visible { outline-offset: 4px; }
+  .keys { text-align: center; font-size: 12.5px; color: var(--muted); padding-bottom: 4px; }
+  .row:hover { border-color: var(--accent); }
+  /* Angebot als grosses Fenster */
+  .sheet { position: fixed; inset: 48px max(48px, calc(50% - 600px)); z-index: 60; border-radius: 28px; overflow: hidden; display: grid; grid-template-columns: 1.05fr 1fr; grid-template-rows: 1fr auto;
+    box-shadow: 0 0 0 100vmax rgba(5, 8, 16, .62), 0 40px 80px rgba(0,0,0,.5); transform: scale(.96); opacity: 0; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .25s, visibility 0s .3s; }
+  .sheet.open { transform: none; opacity: 1; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .25s, visibility 0s; }
+  .sheet .hero { grid-column: 1; grid-row: 1 / 3; height: auto; min-height: 0; }
+  .sheet .body { grid-column: 2; grid-row: 1; overflow-y: auto; margin-top: 0; padding: 28px 28px 24px; align-content: start; grid-auto-rows: max-content; min-height: 0; }
+  .sheet .bookbar { grid-column: 2; grid-row: 2; position: static; padding: 16px 28px; }
+  .sheet .close { top: 20px; left: 20px; width: 46px; height: 46px; }
+  .dots { bottom: 24px; }
+  .hcap { top: 22px; right: 20px; }
+  .pass .head h1 { font-size: 36px; }
+  /* Chat als schwebendes Fenster */
+  .chat { position: fixed; inset: auto max(64px, calc(50% - 580px)) 64px auto; width: 400px; height: min(620px, calc(100% - 128px)); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,.45); border: 1px solid var(--line); transform: translateY(24px); opacity: 0; transition: transform .25s, opacity .2s, visibility 0s .25s; }
+  .chat.open { transform: none; opacity: 1; transition: transform .25s, opacity .2s, visibility 0s; }
+  .match .pic { width: 160px; height: 160px; }
+}
+@media (min-width: 1000px) and (max-width: 1180px) {
+  main { grid-template-columns: 290px minmax(360px, 1fr) 300px; gap: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match .inner { animation: none; }
+  .card, .sheet, .toast, .round { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="ambient" id="ambient" aria-hidden="true"></div>
+<div class="app" id="app">
+  <header class="top">
+    <h1 class="brand"><img class="mark" src="logo-mark.png" alt="" width="240" height="238"><img class="logo" src="logo-word.png" alt="Veni Vidi Volo" width="900" height="153"></h1>
+    <div class="hright"><div class="summary" id="summary"></div>
+      <button class="themebtn" id="theme" aria-label="Nachtmodus einschalten"><svg class="i-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg></button></div>
+  </header>
+  <svg class="meander" aria-hidden="true" preserveAspectRatio="none"><defs><pattern id="meander-p" width="18" height="12" patternUnits="userSpaceOnUse"><path d="M0 10.5H13V1.5H4.5V7.5H9.5V4.5M13 10.5H18" fill="none" stroke="currentColor" stroke-width="1.5"/></pattern></defs><rect width="100%" height="12" fill="url(#meander-p)"/></svg>
+
+  <nav class="tabs" aria-label="Navigation">
+    <button id="t-deck" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M2 7v10M22 7v10"/></svg>Entdecken</button>
+    <button id="t-saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.3-8.9-8.6C1.7 8.2 3.6 5 7 5c2 0 3.4 1 4 2.2h2C13.6 6 15 5 17 5c3.4 0 5.3 3.2 3.9 6.4C19 15.7 12 20 12 20z"/></svg>Gemerkt<span class="count" id="count"></span></button>
+    <button id="t-filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Filter</button>
+  </nav>
+
+  <main>
+    <!-- Entdecken -->
+    <section class="view" id="v-deck" aria-label="Angebote entdecken">
+      <div class="deck-wrap" style="position:relative;flex:1;min-height:0;display:flex;flex-direction:column"><div class="deck" id="deck"></div>
+      <div class="actions">
+        <button class="round nope" id="b-nope" aria-label="Kein Interesse (links)"><svg viewBox="0 0 24 24" fill="none"><defs><linearGradient id="gx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A4C"/><stop offset=".55" stop-color="#FF4458"/><stop offset="1" stop-color="#E01E5A"/></linearGradient></defs><path d="M6 6l12 12M18 6L6 18" stroke="url(#gx)" stroke-width="3.6" stroke-linecap="round"/></svg></button>
+        <button class="round small info" id="b-info" aria-label="Details ansehen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 11v7M12 6.5v.01"/></svg></button>
+        <button class="round like" id="b-like" aria-label="Gefällt mir (rechts)"><svg viewBox="0 0 24 24"><defs><linearGradient id="gh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B8F55A"/><stop offset=".55" stop-color="#2BD99A"/><stop offset="1" stop-color="#10B9B0"/></linearGradient></defs><path fill="url(#gh)" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4h2c.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.7 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg></button>
+      </div>
+      </div>
+            <div class="keys desk-only">Tasten: <kbd>←</kbd> Nein · <kbd>→</kbd> Gefällt mir · <kbd>↑</kbd> Details · <kbd>Leertaste</kbd> nächstes Foto</div>
+    </section>
+
+    <!-- Gemerkt -->
+    <section class="view" id="v-saved" hidden aria-label="Gemerkte Angebote">
+      <div class="section-h"><h2>Gemerkt</h2><button class="linkbtn" id="clear-saved">Liste leeren</button></div>
+      <div class="seg" role="group" aria-label="Ansicht">
+        <button id="seg-liked" aria-pressed="true">Gemerkt</button>
+        <button id="seg-all" aria-pressed="false">Alle Treffer</button>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
+
+    <!-- Filter -->
+    <section class="view" id="v-filter" hidden aria-label="Was suchst du?">
+      <form class="filter" id="filter-form">
+        <div class="section-h" style="padding-bottom:0"><h2>Was suchst du?</h2><button type="button" class="linkbtn" id="reset">Zurücksetzen</button></div>
+
+        <div class="fgroup">
+          <div class="lbl">Reiseart</div>
+          <div class="chips" id="f-types"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="lbl"><span>Max. Reisezeit ab Zürich</span><output id="o-hours"></output></div>
+          <input type="range" id="f-hours" min="1" max="14" step="0.5">
+          <div class="scale"><span>1 h</span><span>Europa</span><span>Fernreise</span><span>14 h</span></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="lbl"><span>Land</span><output id="o-countries"></output></div>
+          <div class="chips" id="f-countries"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="lbl">Reisende</div>
+          <div class="steppers">
+            <div class="stepper"><div><b>Erwachsene</b><small>ab 18 J.</small></div>
+              <div class="ctl"><button type="button" id="ad-minus" aria-label="Erwachsene weniger">−</button><output id="o-adults"></output><button type="button" id="ad-plus" aria-label="Erwachsene mehr">+</button></div></div>
+            <div class="stepper"><div><b>Kinder</b><small>0–17 J.</small></div>
+              <div class="ctl"><button type="button" id="ki-minus" aria-label="Kinder weniger">−</button><output id="o-kids"></output><button type="button" id="ki-plus" aria-label="Kinder mehr">+</button></div></div>
+          </div>
+          <div class="kids-ages" id="kids-ages"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="lbl"><span>Reisedatum</span><output id="o-nights"></output></div>
+          <div class="dates">
+            <label for="f-from">Abreise frühestens<input type="date" id="f-from"></label>
+            <label for="f-to">Abreise spätestens<input type="date" id="f-to"></label>
+          </div>
+        </div>
+
+        <div class="sticky-cta"><button class="btn" type="submit" id="apply">Angebote zeigen</button></div>
+      </form>
+    </section>
+
+    <!-- Detail -->
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Angebotsdetails"></div>
+    <div class="chat" id="chat" role="dialog" aria-modal="true" aria-label="Chat mit der Reiseberatung">
+      <header><button id="chat-close" aria-label="Chat schliessen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="avatar" id="chat-av"></div><div><b id="chat-title"></b><small id="chat-sub"></small></div></header>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <div class="quick" id="quick"></div>
+      <form class="composer" id="composer"><input id="chat-input" placeholder="Nachricht schreiben …" autocomplete="off" aria-label="Nachricht">
+        <button type="submit" aria-label="Senden"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5l18-8.5L3 3.5v6.6l12 1.9-12 1.9z"/></svg></button></form>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+  <div class="match" id="match" hidden role="dialog" aria-modal="true" aria-labelledby="match-h">
+    <canvas id="confetti"></canvas>
+    <div class="inner">
+      <h2 id="match-h"><small>Es ist ein Match</small><img class="mlogo" src="logo-full.png" alt="Veni Vidi Volo"></h2>
+      <div class="pair"><div class="pic" id="match-pic"></div><div class="pic you"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4h2c.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.7 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg></div></div>
+      <p id="match-text"></p>
+      <div class="btns"><button class="btn primary" id="match-open">Angebot ansehen</button><button class="btn ghost" id="match-close">Weiter swipen</button></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ================= Beispieldaten ================= */
+const AGENCIES = {
+  hotelplan: { name: "Hotelplan", url: "https://www.hotelplan.ch" },
+  tui:       { name: "TUI Suisse", url: "https://www.tui.ch" },
+  kuoni:     { name: "Kuoni", url: "https://www.kuoni.ch" },
+  helvetic:  { name: "Helvetic Tours", url: "https://www.helvetictours.ch" },
+  ebookers:  { name: "ebookers.ch", url: "https://www.ebookers.ch" },
+  lastminute:{ name: "lastminute.ch", url: "https://www.lastminute.ch" },
+  msc:       { name: "MSC Kreuzfahrten", url: "https://www.msccruises.ch" },
+  stc:       { name: "Switzerland Travel Centre", url: "https://www.stc.ch" },
+};
+const TYPES = ["Pauschalreise", "All Inclusive", "Nur Hotel", "Städtereise", "Kreuzfahrt", "Rundreise", "Wellness", "Last Minute"];
+const ALL = [1,2,3,4,5,6,7,8,9,10,11,12];
+
+// hours = Reisezeit ab Zürich (Flug bzw. Bahn/Bus), months = Abreisemonate, dep = Abreise-Wochentag (0=So)
+/* Echte Angebote, Stand 8. Oktober 2026 (Ab-Preise pro Person bei 2 Erwachsenen, laut Anbieter-Website) */
+const LM = "https://ferien.lastminute.ch/search?bookingType=PACKAGE&travellers=25-1_25-2&dd=2026-10-10&rd=2026-10-20&minD=10&maxD=10&category=4&boardCodes=GT06-BR_GT06-HB_GT06-HBP_GT06-FB_GT06-FBP_GT06-AI_GT06-AIP&airportCodes=ZRH_BSL&recommendationRate=80&travelogic=c9efcf72492071026";
+const ALD = (id, g, n) => `https://ferien.lastminute.ch/hoteldetail/${id}?bookingType=PACKAGE&travellers=25-1_25-2&dd=2026-10-12&rd=2027-04-10&minD=6&maxD=8&gl.group=${g}&nodes=${n}&airportCodes=ZRH_BSL&travelogic=c1f0f759aaf071026`;
+const TUI = (slug, id, cid) => `https://www.tui.ch/de/pauschalreisen/suchen/angebote/${slug}/${id}/list/?adults=2&duration=7-&sortHotelsAsc=1&startDate=2026-10-09&endDate=2027-06-09&language=de&contentid=5042_ho_1_${cid}_20261007`;
+const LM_INFO = "Last-Minute-Angebot von lastminute.ch, auf der Website als «fast ausgebucht» markiert. Abflug am 10. Oktober ab Zürich oder Basel, Rückflug am 20. Oktober.";
+const ALD_INFO = "Aldiana-Club über lastminute.ch. Abreise zwischen 12. Oktober 2026 und 10. April 2027 möglich, ab Zürich oder Basel.";
+const TUI_INFO = (p) => `Flash-Sale-Angebot von TUI Suisse (statt ${p}). Reisezeitraum 9. Oktober 2026 bis 9. Juni 2027, Abflug ab Schweizer Flughafen.`;
+const OFFERS = [
+  { id:"lm-fenix", look:"pmi", place:"Mallorca", region:"", country:"Spanien", iata:"PMI", mode:"Flug", hours:1.75, hotel:"Welikehotel Fenix", stars:4, board:"Frühstück", types:["Pauschalreise","Last Minute"], nights:10, price:838, child:null, kids:true, from:"2026-10-10", until:"2026-10-10", dep:null, agency:"lastminute", url:LM.replace("&airportCodes", "&gl.group=1000r&nodes=1000r&airportCodes"), scene:"beach", pal:["#7EC8E3","#FCE7C8","#1B8FB5","#F2D7A6"],
+    text:LM_INFO, incl:["Flug ab Zürich oder Basel","10 Nächte im Doppelzimmer","Frühstück"] },
+  { id:"lm-stella", look:"her", place:"Kreta", region:"", country:"Griechenland", iata:"HER", mode:"Flug", hours:3, hotel:"Stella Paradise By Checkin", stars:4, board:"Frühstück", types:["Pauschalreise","Last Minute"], nights:10, price:638, child:null, kids:true, from:"2026-10-10", until:"2026-10-10", dep:null, agency:"lastminute", url:LM.replace("&airportCodes", "&gl.group=1060r&nodes=1060r&airportCodes"), scene:"island", pal:["#5DB7E8","#E6F4FB","#0E6FA8","#EBDDC0"],
+    text:LM_INFO, incl:["Flug ab Zürich oder Basel","10 Nächte","Frühstück"] },
+  { id:"lm-baia", look:"olb", place:"Sardinien", region:"", country:"Italien", iata:"OLB", mode:"Flug", hours:1.5, hotel:"Baia Holiday Baia Blu la Tortuga", stars:4, board:"Frühstück", types:["Pauschalreise","Last Minute"], nights:10, price:971, child:null, kids:true, from:"2026-10-10", until:"2026-10-10", dep:null, agency:"lastminute", url:LM.replace("&airportCodes", "&gl.group=1000001r&nodes=1000001r&airportCodes"), scene:"island", pal:["#7FD0E8","#EAF8FB","#11A3B4","#EFE2C5"],
+    text:LM_INFO, incl:["Flug ab Zürich oder Basel","10 Nächte","Frühstück"] },
+  { id:"lm-plage", look:"dbv", place:"Côte d'Azur", region:"", country:"Frankreich", iata:"NCE", mode:"Flug", hours:1.25, hotel:"SOWELL HÔTELS La Plage", stars:4, board:"All Inclusive", types:["All Inclusive","Pauschalreise","Last Minute"], nights:10, price:1521, child:null, kids:true, from:"2026-10-10", until:"2026-10-10", dep:null, agency:"lastminute", url:LM.replace("&airportCodes", "&gl.group=1226r&nodes=1226r&airportCodes"), scene:"beach", pal:["#8CC8EA","#FFF1D6","#2A93C9","#EBCB91"],
+    text:LM_INFO, incl:["Flug ab Zürich oder Basel","10 Nächte im Doppelzimmer","All Inclusive"] },
+  { id:"ald-fue", look:"fue", place:"Fuerteventura", region:"", country:"Spanien", iata:"FUE", mode:"Flug", hours:4.25, hotel:"Aldiana Club Fuerteventura", stars:0, board:"All Inclusive", types:["All Inclusive","Pauschalreise"], nights:6, price:1114, child:null, kids:true, from:"2026-10-12", until:"2027-04-10", dep:null, agency:"lastminute", url:ALD(2603, "1005r", "1011r"), scene:"desert", pal:["#F5B36B","#FDE6C4","#18A3B8","#E8C98E"],
+    text:ALD_INFO, incl:["Flug ab Zürich oder Basel","6 Nächte im Doppelzimmer","All Inclusive"] },
+  { id:"ald-and", look:"lpa", place:"Andalusien", region:"Costa de la Luz", country:"Spanien", iata:"XRY", mode:"Flug", hours:2.5, hotel:"Aldiana Club Andalusien", stars:0, board:"All Inclusive", types:["All Inclusive","Pauschalreise"], nights:6, price:946, child:null, kids:true, from:"2026-10-12", until:"2027-04-10", dep:null, agency:"lastminute", url:ALD(2335, "1029r", "1037r"), scene:"beach", pal:["#8CC8EA","#FFF1D6","#2A93C9","#EBCB91"],
+    text:ALD_INFO, incl:["Flug ab Zürich oder Basel","6 Nächte im Doppelzimmer","All Inclusive"] },
+  { id:"ald-dje", look:"hrg", place:"Djerba", region:"", country:"Tunesien", iata:"DJE", mode:"Flug", hours:2.5, hotel:"Aldiana Club Djerba Atlantide", stars:0, board:"All Inclusive", types:["All Inclusive","Pauschalreise"], nights:7, price:969, child:null, kids:true, from:"2026-10-12", until:"2027-04-10", dep:null, agency:"lastminute", url:ALD(3947, "1000010r", "1134r"), scene:"desert", pal:["#F5B36B","#FDE6C4","#18A3B8","#E8C98E"],
+    text:ALD_INFO, incl:["Flug ab Zürich oder Basel","7 Nächte im Doppelzimmer","All Inclusive"] },
+  { id:"ald-cal", look:"her", place:"Kalabrien", region:"", country:"Italien", iata:"SUF", mode:"Flug", hours:2, hotel:"Aldiana Club Rocca Nettuno Calabria", stars:0, board:"All Inclusive", types:["All Inclusive","Pauschalreise"], nights:6, price:1227, child:null, kids:true, from:"2026-10-12", until:"2027-04-10", dep:null, agency:"lastminute", url:ALD(1609, "1000001r", "1104r"), scene:"island", pal:["#F0A97A","#FFE7D2","#2088B8","#EED3A8"],
+    text:ALD_INFO, incl:["Flug ab Zürich oder Basel","6 Nächte im Doppelzimmer","All Inclusive"] },
+  { id:"tui-taurus", look:"pmi", place:"Mallorca", region:"", country:"Spanien", iata:"PMI", mode:"Flug", hours:1.75, hotel:"Grupotel Taurus Park", stars:0, rec:93, board:"Frühstück", types:["Pauschalreise"], nights:7, price:473, was:631, child:null, kids:true, from:"2026-10-09", until:"2027-06-09", dep:null, agency:"tui", url:TUI("Grupotel-Taurus-Park", 3496, "PMI43003"), scene:"beach", pal:["#F7A26B","#FFE1C2","#2C8DB8","#F1D3A0"],
+    text:TUI_INFO("CHF 631"), incl:["Flug ab der Schweiz","7 Nächte im Doppelzimmer","Frühstück"] },
+  { id:"tui-riu", look:"pmi", place:"Mallorca", region:"", country:"Spanien", iata:"PMI", mode:"Flug", hours:1.75, hotel:"Hotel Riu Festival", stars:0, rec:98, board:"Halbpension", types:["Pauschalreise"], nights:7, price:477, was:551, child:null, kids:true, from:"2026-10-09", until:"2027-06-09", dep:null, agency:"tui", url:TUI("Hotel-Riu-Festival", 20418, "PMI43037"), scene:"beach", pal:["#7EC8E3","#FCE7C8","#1B8FB5","#F2D7A6"],
+    text:TUI_INFO("CHF 551"), incl:["Flug ab der Schweiz","7 Nächte im Doppelzimmer","Halbpension"] },
+  { id:"tui-vista", look:"pmi", place:"Mallorca", region:"", country:"Spanien", iata:"PMI", mode:"Flug", hours:1.75, hotel:"Grupotel Gran Vista & Spa", stars:0, rec:94, board:"Frühstück", types:["Pauschalreise","Wellness"], nights:7, price:508, was:543, child:null, kids:true, from:"2026-10-09", until:"2027-06-09", dep:null, agency:"tui", url:TUI("Grupotel-Gran-Vista-&-Spa", 674842, "PMI82004"), scene:"beach", pal:["#8CC8EA","#FFF1D6","#2A93C9","#EBCB91"],
+    text:TUI_INFO("CHF 543"), incl:["Flug ab der Schweiz","7 Nächte im Doppelzimmer","Frühstück"] },
+  { id:"kuo-th", look:"hkt", place:"Thailand", region:"Inselparadiese", country:"Thailand", iata:"BKK", mode:"Flug", hours:11.5, hotel:"Private Rundreise «Inselparadiese»", stars:0, board:"laut Programm", types:["Rundreise"], nights:8, dur:"9 Tage", price:1490, child:null, kids:true, from:"2026-10-08", until:"2027-10-08", dep:null, agency:"kuoni", url:"https://www.kuoni.ch/asien/thailand/info/inselparadiese", scene:"lagoon", pal:["#F59E7A","#FFE2D1","#1E9DB0","#EED9B0"],
+    text:"Private Rundreise von asia365 über Kuoni, 9 Tage. Ablauf, Hotels und Leistungen stehen im Reiseprogramm beim Anbieter.", incl:["Private Rundreise, 9 Tage","Details laut Programm von Kuoni"] },
+  { id:"kuo-it", look:"dbv", place:"Süditalien", region:"Apulien", country:"Italien", iata:"BRI", mode:"Flug", hours:1.75, hotel:"Mietwagen-Rundreise «Vielfalt Süditaliens»", stars:0, board:"laut Programm", types:["Rundreise"], nights:11, dur:"12 Tage", price:918, child:null, kids:true, from:"2026-10-08", until:"2027-10-08", dep:null, agency:"kuoni", url:"https://www.kuoni.ch/europa/italien/info/fantastische-vielfalt-sueditaliens", scene:"city", pal:["#E9A06B","#FCE3C7","#7A9BB5","#B85C3A"],
+    text:"Mietwagen-Rundreise von Kuoni Reisen durch Apulien und Süditalien, 12 Tage. Route und Hotels stehen im Reiseprogramm beim Anbieter.", incl:["Mietwagen-Rundreise, 12 Tage","Details laut Programm von Kuoni"] },
+  { id:"kuo-is", look:"kef", place:"Island", region:"Ringstrasse", country:"Island", iata:"KEF", mode:"Flug", hours:3.75, hotel:"Mietwagen-Rundreise «Alle Höhepunkte Islands»", stars:0, board:"laut Programm", types:["Rundreise"], nights:14, dur:"15 Tage", price:2440, child:null, kids:true, from:"2026-10-08", until:"2027-10-08", dep:null, agency:"kuoni", url:"https://www.kuoni.ch/europa/island/info/alle-hoehepunkte-islands-in-15-tagen", scene:"volcano", pal:["#6E8BA8","#C9D8E6","#3A5C78","#3B4A52"],
+    text:"Mietwagen-Rundreise von Kontiki Reisen über Kuoni, 15 Tage. Route und Unterkünfte stehen im Reiseprogramm beim Anbieter.", incl:["Mietwagen-Rundreise, 15 Tage","Details laut Programm von Kuoni"] },
+];
+
+/* ================= Illustrationen (Silhouetten) ================= */
+function rng(seed) { let s = 0; for (const c of seed) s = (s * 31 + c.charCodeAt(0)) >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function mix(a, b, t) {
+  const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const A = p(a), B = p(b);
+  return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join("");
+}
+// Szene je Ziel: sea = Meerhorizont, ground = Vordergrund, items = Silhouetten
+const LOOKS = {
+  pmi: { sea: 1, ground: "beach", items: [["windmill", 300, 1], ["palm", 70, 1.1], ["palm", 118, .8]] },
+  her: { sea: 1, ground: "cliff", items: [["chapel", 290, 1], ["windmill", 370, .7]] },
+  ayt: { sea: 1, ground: "beach", items: [["mosque", 270, .9], ["palm", 60, 1.15], ["palm", 105, .85]] },
+  hrg: { sea: 1, ground: "dune", items: [["camel", 250, 1], ["palm", 70, 1]] },
+  lpa: { sea: 1, ground: "dune", items: [["lighthouse", 290, 1], ["palm", 80, .9]] },
+  lis: { sea: 1, ground: "quay", items: [["tower", 120, 1], ["bridge", 0, 1]] },
+  bcn: { sea: 0, ground: "city", items: [["sagrada", 200, 1]] },
+  rom: { sea: 0, ground: "hills", items: [["colosseum", 210, 1], ["cypress", 50, 1], ["cypress", 80, .8], ["cypress", 360, 1.1]] },
+  olb: { sea: 1, ground: "rocks", items: [["sailboat", 240, 1], ["sailboat", 130, .55]] },
+  mle: { sea: 1, ground: "lagoon", items: [["villas", 200, 1], ["palm", 350, 1.1]] },
+  mru: { sea: 1, ground: "beach", items: [["lemorne", 230, 1], ["palm", 70, 1.15]] },
+  dxb: { sea: 1, ground: "quay", items: [["skyline", 200, 1], ["burj", 230, 1]] },
+  hkt: { sea: 1, ground: "beach", items: [["karst", 300, 1], ["longtail", 190, 1], ["palm", 50, 1.1]] },
+  kef: { sea: 0, ground: "lava", items: [["aurora", 0, 1], ["volcano", 230, 1]] },
+  msc: { sea: 1, ground: "none", items: [["ship", 200, 1]] },
+  zmt: { sea: 0, ground: "alps", items: [["matterhorn", 220, 1], ["chalet", 80, .8], ["pine", 330, 1], ["pine", 360, .8]] },
+  tir: { sea: 0, ground: "snow", items: [["peaks", 200, 1], ["chalet", 200, 1], ["pine", 60, 1.1], ["pine", 95, .8], ["pine", 340, 1]] },
+  pfo: { sea: 1, ground: "beach", items: [["rock", 250, 1]] },
+  sid: { sea: 1, ground: "beach", items: [["kite", 260, 1], ["palm", 70, 1]] },
+  rak: { sea: 0, ground: "desert", items: [["minaret", 230, 1], ["palm", 90, 1], ["palm", 330, .9]] },
+  nyc: { sea: 1, ground: "none", items: [["skyline", 230, 1.2], ["liberty", 90, 1]] },
+  fue: { sea: 1, ground: "dune", items: [["surfer", 230, 1], ["palm", 360, .9]] },
+  fnc: { sea: 1, ground: "cliff", items: [["cablecar", 0, 1], ["palm", 70, .9]] },
+  dbv: { sea: 1, ground: "none", items: [["walls", 230, 1], ["sailboat", 80, .55]] },
+};
+const HY = 300; // Horizont
+const ITEMS = {
+  palm(x, s, c) {
+    const h = 150 * s, y = 420, tx = x + 18 * s, ty = y - h;
+    let p = `<path d="M${x} ${y} Q ${x - 10 * s} ${y - h * .55} ${tx} ${ty}" stroke="${c}" stroke-width="${9 * s}" fill="none" stroke-linecap="round"/>`;
+    [[-70, 18], [-55, -20], [-18, -42], [22, -40], [58, -16], [72, 22], [8, 40]].forEach(([dx, dy]) => {
+      const ex = tx + dx * s, ey = ty + dy * s + 22 * s, mx = tx + dx * .5 * s, my = ty + Math.min(dy, 0) * s - 22 * s;
+      p += `<path d="M${tx} ${ty} Q ${mx} ${my} ${ex} ${ey} Q ${mx + 4} ${my + 14 * s} ${tx} ${ty + 6 * s}Z" fill="${c}"/>`;
+    });
+    return p + `<circle cx="${tx}" cy="${ty + 6 * s}" r="${6 * s}" fill="${c}"/>`;
+  },
+  cypress(x, s, c) { const y = 350, h = 120 * s; return `<path d="M${x} ${y - h} C ${x + 16 * s} ${y - h * .6}, ${x + 14 * s} ${y - 10}, ${x} ${y} C ${x - 14 * s} ${y - 10}, ${x - 16 * s} ${y - h * .6}, ${x} ${y - h}Z" fill="${c}"/><rect x="${x - 2}" y="${y - 2}" width="4" height="30" fill="${c}"/>`; },
+  pine(x, s, c) { const y = 390; let p = `<rect x="${x - 3 * s}" y="${y - 10}" width="${6 * s}" height="40" fill="${c}"/>`; for (let i = 0; i < 4; i++) { const w = (40 - i * 8) * s, yy = y - i * 26 * s; p += `<path d="M${x - w} ${yy} L${x} ${yy - 44 * s} L${x + w} ${yy}Z" fill="${c}"/>`; } return p; },
+  windmill(x, s, c) {
+    const y = 360, h = 110 * s;
+    let p = `<path d="M${x - 22 * s} ${y} L${x - 14 * s} ${y - h} L${x + 14 * s} ${y - h} L${x + 22 * s} ${y}Z" fill="${c}"/><path d="M${x - 18 * s} ${y - h} Q ${x} ${y - h - 26 * s} ${x + 18 * s} ${y - h}Z" fill="${c}"/>`;
+    const cx = x, cy = y - h - 4 * s;
+    [20, 110, 200, 290].forEach(a => { const r = a * Math.PI / 180, ex = cx + Math.cos(r) * 70 * s, ey = cy + Math.sin(r) * 70 * s;
+      p += `<line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="${c}" stroke-width="${3 * s}"/><path d="M${cx + Math.cos(r) * 22 * s} ${cy + Math.sin(r) * 22 * s} L${ex} ${ey} L${ex + Math.cos(r + 1.57) * 12 * s} ${ey + Math.sin(r + 1.57) * 12 * s} L${cx + Math.cos(r) * 22 * s + Math.cos(r + 1.57) * 10 * s} ${cy + Math.sin(r) * 22 * s + Math.sin(r + 1.57) * 10 * s}Z" fill="${c}" opacity=".85"/>`; });
+    return p;
+  },
+  chapel(x, s, c) { const y = 340; return `<rect x="${x - 40 * s}" y="${y - 60 * s}" width="${80 * s}" height="${70 * s}" fill="${c}"/><path d="M${x - 28 * s} ${y - 60 * s} A ${28 * s} ${30 * s} 0 0 1 ${x + 28 * s} ${y - 60 * s}Z" fill="${c}"/><rect x="${x - 2 * s}" y="${y - 112 * s}" width="${4 * s}" height="${24 * s}" fill="${c}"/><rect x="${x - 9 * s}" y="${y - 104 * s}" width="${18 * s}" height="${4 * s}" fill="${c}"/><rect x="${x - 80 * s}" y="${y - 34 * s}" width="${46 * s}" height="${44 * s}" fill="${c}"/><rect x="${x + 36 * s}" y="${y - 48 * s}" width="${30 * s}" height="${58 * s}" fill="${c}"/><path d="M${x + 36 * s} ${y - 48 * s} L${x + 51 * s} ${y - 62 * s} L${x + 66 * s} ${y - 48 * s}Z" fill="${c}"/>`; },
+  mosque(x, s, c) { const y = 330; let p = `<rect x="${x - 60 * s}" y="${y - 40 * s}" width="${120 * s}" height="${50 * s}" fill="${c}"/><path d="M${x - 44 * s} ${y - 40 * s} A ${44 * s} ${48 * s} 0 0 1 ${x + 44 * s} ${y - 40 * s}Z" fill="${c}"/><rect x="${x - 1.5 * s}" y="${y - 104 * s}" width="${3 * s}" height="${18 * s}" fill="${c}"/>`;
+    [-82, 82].forEach(d => { p += `<rect x="${x + d * s - 5 * s}" y="${y - 130 * s}" width="${10 * s}" height="${140 * s}" fill="${c}"/><path d="M${x + d * s - 7 * s} ${y - 130 * s} L${x + d * s} ${y - 160 * s} L${x + d * s + 7 * s} ${y - 130 * s}Z" fill="${c}"/><rect x="${x + d * s - 8 * s}" y="${y - 100 * s}" width="${16 * s}" height="${4 * s}" fill="${c}"/>`; }); return p; },
+  minaret(x, s, c) { const y = 380; return `<rect x="${x - 22 * s}" y="${y - 190 * s}" width="${44 * s}" height="${200 * s}" fill="${c}"/>` + [0, 1, 2, 3, 4].map(i => `<rect x="${x - 25 * s + i * 11 * s}" y="${y - 198 * s}" width="${6 * s}" height="${10 * s}" fill="${c}"/>`).join("") + `<rect x="${x - 10 * s}" y="${y - 236 * s}" width="${20 * s}" height="${40 * s}" fill="${c}"/><path d="M${x - 12 * s} ${y - 236 * s} Q ${x} ${y - 262 * s} ${x + 12 * s} ${y - 236 * s}Z" fill="${c}"/><rect x="${x - 1.5 * s}" y="${y - 280 * s}" width="${3 * s}" height="${26 * s}" fill="${c}"/><circle cx="${x}" cy="${y - 266 * s}" r="${3.5 * s}" fill="${c}"/><circle cx="${x}" cy="${y - 276 * s}" r="${2.5 * s}" fill="${c}"/>` + `<rect x="${x - 120 * s}" y="${y - 50 * s}" width="${240 * s}" height="${60 * s}" fill="${c}"/>`; },
+  lighthouse(x, s, c, glow) { const y = 350; return `<path d="M${x - 50} ${y - 150} L${x - 300} ${y - 210} L${x - 300} ${y - 90}Z" fill="${glow}" opacity=".22"/><path d="M${x - 16 * s} ${y} L${x - 10 * s} ${y - 130 * s} L${x + 10 * s} ${y - 130 * s} L${x + 16 * s} ${y}Z" fill="${c}"/><rect x="${x - 14 * s}" y="${y - 136 * s}" width="${28 * s}" height="${6 * s}" fill="${c}"/><rect x="${x - 8 * s}" y="${y - 154 * s}" width="${16 * s}" height="${18 * s}" fill="${glow}"/><path d="M${x - 11 * s} ${y - 154 * s} L${x} ${y - 168 * s} L${x + 11 * s} ${y - 154 * s}Z" fill="${c}"/><rect x="${x - 40 * s}" y="${y - 24 * s}" width="${30 * s}" height="${24 * s}" fill="${c}"/>`; },
+  tower(x, s, c) { const y = 360; let p = `<rect x="${x - 34 * s}" y="${y - 150 * s}" width="${68 * s}" height="${150 * s}" fill="${c}"/><rect x="${x - 50 * s}" y="${y - 60 * s}" width="${100 * s}" height="${60 * s}" fill="${c}"/>`;
+    for (let i = 0; i < 6; i++) p += `<rect x="${x - 34 * s + i * 12.4 * s}" y="${y - 160 * s}" width="${7 * s}" height="${12 * s}" fill="${c}"/>`;
+    return p + `<circle cx="${x - 34 * s}" cy="${y - 150 * s}" r="${9 * s}" fill="${c}"/><circle cx="${x + 34 * s}" cy="${y - 150 * s}" r="${9 * s}" fill="${c}"/>`; },
+  bridge(x, s, c) { const y = 300; let p = `<rect x="160" y="${y - 22}" width="260" height="5" fill="${c}"/>`; [230, 360].forEach(t => { p += `<rect x="${t - 5}" y="${y - 110}" width="10" height="130" fill="${c}"/><path d="M${t - 120} ${y - 20} Q ${t - 60} ${y - 40} ${t} ${y - 108} Q ${t + 60} ${y - 40} ${t + 120} ${y - 20}" stroke="${c}" stroke-width="2" fill="none"/>`; }); return p; },
+  sagrada(x, s, c) { const y = 370; let p = `<rect x="${x - 90}" y="${y - 90}" width="180" height="100" fill="${c}"/>`;
+    [[-70, 150], [-44, 205], [-16, 250], [16, 250], [44, 205], [70, 150], [0, 290]].forEach(([d, h]) => { const w = d === 0 ? 14 : 10; p += `<path d="M${x + d - w} ${y - 80} L${x + d - w} ${y - h + 50} Q ${x + d - w} ${y - h} ${x + d} ${y - h - 12} Q ${x + d + w} ${y - h} ${x + d + w} ${y - h + 50} L${x + d + w} ${y - 80}Z" fill="${c}"/>`; });
+    return p + `<path d="M${x + 110} ${y} L${x + 112} ${y - 230} L${x + 116} ${y - 230} L${x + 118} ${y}Z M${x + 50} ${y - 226} L${x + 160} ${y - 226} L${x + 160} ${y - 220} L${x + 50} ${y - 220}Z" fill="${c}" opacity=".8"/><line x1="${x + 70}" y1="${y - 220}" x2="${x + 70}" y2="${y - 170}" stroke="${c}" stroke-width="1.5"/>`; },
+  colosseum(x, s, c, glow) { const y = 350; let p = `<path d="M${x - 130} ${y} L${x - 130} ${y - 120} Q ${x} ${y - 140} ${x + 60} ${y - 128} L${x + 70} ${y - 100} L${x + 110} ${y - 90} L${x + 130} ${y - 60} L${x + 130} ${y}Z" fill="${c}"/>`;
+    for (let row = 0; row < 3; row++) for (let i = 0; i < 11; i++) { const ax = x - 120 + i * 23, ay = y - 30 - row * 34, top = row === 2 && ax > x + 50 ? 0 : 1; if (top && !(row === 2 && ax > x + 30) && !(row === 1 && ax > x + 95)) p += `<path d="M${ax} ${ay} L${ax} ${ay - 14} A 7 7 0 0 1 ${ax + 14} ${ay - 14} L${ax + 14} ${ay}Z" fill="${glow}" opacity=".55"/>`; }
+    return p; },
+  sailboat(x, s, c) { const y = 320; return `<path d="M${x - 50 * s} ${y} L${x + 50 * s} ${y} L${x + 36 * s} ${y + 14 * s} L${x - 40 * s} ${y + 14 * s}Z" fill="${c}"/><rect x="${x - 2 * s}" y="${y - 140 * s}" width="${3 * s}" height="${140 * s}" fill="${c}"/><path d="M${x + 3 * s} ${y - 135 * s} Q ${x + 50 * s} ${y - 60 * s} ${x + 48 * s} ${y - 8 * s} L${x + 3 * s} ${y - 8 * s}Z" fill="${c}"/><path d="M${x - 4 * s} ${y - 120 * s} L${x - 4 * s} ${y - 8 * s} L${x - 46 * s} ${y - 8 * s}Z" fill="${c}" opacity=".85"/>`; },
+  villas(x, s, c, glow) { let p = `<rect x="0" y="352" width="400" height="5" fill="${c}"/>`;
+    [40, 125, 210, 295].forEach(vx => { p += `<rect x="${vx + 6}" y="340" width="4" height="40" fill="${c}"/><rect x="${vx + 60}" y="340" width="4" height="40" fill="${c}"/><rect x="${vx}" y="318" width="70" height="26" fill="${c}"/><path d="M${vx - 8} 320 Q ${vx + 35} 270 ${vx + 78} 320Z" fill="${c}"/><rect x="${vx + 26}" y="326" width="18" height="10" fill="${glow}" opacity=".8"/>`; }); return p; },
+  lemorne(x, s, c) { return `<path d="M${x - 160} ${HY} L${x - 60} ${HY - 60} L${x - 30} ${HY - 140} L${x + 40} ${HY - 150} L${x + 70} ${HY - 100} L${x + 170} ${HY}Z" fill="${c}" opacity=".55"/>`; },
+  burj(x, s, c) { const y = 330; return `<path d="M${x - 26} ${y} L${x - 26} ${y - 110} L${x - 18} ${y - 110} L${x - 18} ${y - 180} L${x - 11} ${y - 180} L${x - 11} ${y - 240} L${x - 6} ${y - 240} L${x - 2} ${y - 300} L${x} ${y - 330} L${x + 2} ${y - 300} L${x + 5} ${y - 220} L${x + 12} ${y - 220} L${x + 12} ${y - 150} L${x + 20} ${y - 150} L${x + 20} ${y - 80} L${x + 28} ${y - 80} L${x + 28} ${y}Z" fill="${c}"/>`; },
+  skyline(x, s, c, glow, r) { let p = "", bx = 0; const y = 330;
+    while (bx < 400) { const w = 18 + r() * 26, h = (50 + r() * 120) * s * (1 - Math.abs(bx - x) / 500); p += `<rect x="${bx}" y="${y - h}" width="${w}" height="${h + 20}" fill="${c}" opacity="${.75 + r() * .25}"/>`; if (r() > .75) p += `<rect x="${bx + w / 2 - 1}" y="${y - h - 22}" width="2" height="22" fill="${c}"/>`;
+      for (let wy = y - h + 8; wy < y - 6; wy += 11) for (let wx = bx + 4; wx < bx + w - 5; wx += 8) if (r() > .72) p += `<rect x="${wx}" y="${wy}" width="3" height="5" fill="${glow}" opacity=".7"/>`; bx += w + 2; }
+    return p; },
+  liberty(x, s, c) { const y = 345; return `<path d="M${x - 30} ${y} L${x - 22} ${y - 40} L${x + 22} ${y - 40} L${x + 30} ${y}Z" fill="${c}"/><rect x="${x - 14}" y="${y - 80}" width="28" height="40" fill="${c}"/><path d="M${x - 10} ${y - 80} L${x - 7} ${y - 150} Q ${x} ${y - 158} ${x + 8} ${y - 150} L${x + 11} ${y - 80}Z" fill="${c}"/><circle cx="${x}" cy="${y - 160}" r="7" fill="${c}"/><path d="M${x - 8} ${y - 165} l-6 -8 M${x - 4} ${y - 167} l-2 -10 M${x + 1} ${y - 168} l1 -10 M${x + 5} ${y - 166} l5 -8" stroke="${c}" stroke-width="2"/><path d="M${x + 6} ${y - 148} L${x + 12} ${y - 196}" stroke="${c}" stroke-width="5" stroke-linecap="round"/><path d="M${x + 7} ${y - 198} L${x + 17} ${y - 198} L${x + 14} ${y - 206} Q ${x + 12} ${y - 216} ${x + 10} ${y - 206}Z" fill="${c}"/><rect x="${x - 60}" y="${y - 6}" width="120" height="10" fill="${c}"/>`; },
+  karst(x, s, c) { return `<path d="M${x - 60} ${HY} Q ${x - 66} ${HY - 120} ${x - 30} ${HY - 140} Q ${x + 10} ${HY - 150} ${x + 14} ${HY - 100} Q ${x + 30} ${HY - 70} ${x + 40} ${HY}Z M${x + 50} ${HY} Q ${x + 52} ${HY - 70} ${x + 76} ${HY - 74} Q ${x + 96} ${HY - 60} ${x + 96} ${HY}Z" fill="${c}" opacity=".6"/>`; },
+  longtail(x, s, c) { const y = 345; return `<path d="M${x - 90} ${y - 50} Q ${x - 86} ${y - 6} ${x - 60} ${y} L${x + 70} ${y} Q ${x + 90} ${y - 4} ${x + 96} ${y - 20} L${x - 70} ${y - 16} Q ${x - 84} ${y - 30} ${x - 90} ${y - 50}Z" fill="${c}"/><path d="M${x - 40} ${y - 16} L${x - 40} ${y - 46} L${x + 30} ${y - 46} L${x + 30} ${y - 16}" stroke="${c}" stroke-width="3" fill="none"/><path d="M${x - 46} ${y - 46} L${x + 36} ${y - 46} L${x + 30} ${y - 54} L${x - 40} ${y - 54}Z" fill="${c}"/><line x1="${x + 80}" y1="${y - 14}" x2="${x + 130}" y2="${y + 14}" stroke="${c}" stroke-width="3"/>`; },
+  aurora(x, s, c, glow) { return `<path d="M-20 140 C 80 60, 160 200, 260 110 S 380 60, 420 120" stroke="#6CFFC4" stroke-opacity=".5" stroke-width="34" fill="none" filter="url(#blur)"/><path d="M-20 90 C 100 40, 200 150, 300 70 S 400 50, 420 70" stroke="#9A8CFF" stroke-opacity=".35" stroke-width="24" fill="none" filter="url(#blur)"/>`; },
+  volcano(x, s, c) { return `<path d="M-20 ${HY + 20} L${x - 70} ${HY - 110} L${x - 30} ${HY - 120} L${x - 10} ${HY - 112} L${x + 40} ${HY - 120} L${x + 200} ${HY + 20}Z" fill="${c}" opacity=".7"/><path d="M${x - 20} ${HY - 120} q -10 -30 10 -50 q 18 -14 6 -40" stroke="${c}" stroke-opacity=".3" stroke-width="14" fill="none" stroke-linecap="round"/>`; },
+  ship(x, s, c, glow) { const y = 330; let p = `<path d="M${x - 150} ${y - 30} L${x + 160} ${y - 30} L${x + 140} ${y + 6} L${x - 130} ${y + 6}Z" fill="${c}"/>`;
+    [[-120, 140, 26], [-100, 120, 24], [-70, 90, 22], [-30, 50, 20]].forEach(([a, b, h], i) => { const yy = y - 30 - (i + 1) * h; p += `<rect x="${x + a}" y="${yy}" width="${b - a}" height="${h}" fill="${c}"/>`; for (let wx = x + a + 6; wx < x + b - 6; wx += 9) p += `<rect x="${wx}" y="${yy + h / 2 - 2}" width="4" height="4" fill="${glow}" opacity=".75"/>`; });
+    return p + `<path d="M${x + 60} ${y - 142} L${x + 80} ${y - 142} L${x + 84} ${y - 118} L${x + 56} ${y - 118}Z" fill="${c}"/>`; },
+  matterhorn(x, s, c) { return `<path d="M-30 ${HY + 40} L${x - 120} ${HY - 60} L${x - 50} ${HY - 120} L${x - 10} ${HY - 230} L${x + 6} ${HY - 245} L${x + 22} ${HY - 200} L${x + 40} ${HY - 170} L${x + 120} ${HY - 80} L${x + 230} ${HY + 40}Z" fill="${c}" opacity=".75"/><path d="M${x - 10} ${HY - 230} L${x + 6} ${HY - 245} L${x + 22} ${HY - 200} L${x + 8} ${HY - 206} L${x - 2} ${HY - 190} L${x - 20} ${HY - 196}Z" fill="#fff" opacity=".55"/>`; },
+  peaks(x, s, c) { return `<path d="M-30 ${HY + 30} L80 ${HY - 130} L140 ${HY - 70} L230 ${HY - 170} L330 ${HY - 60} L430 ${HY - 120} L430 ${HY + 30}Z" fill="${c}" opacity=".6"/><path d="M80 ${HY - 130} L60 ${HY - 100} L80 ${HY - 106} L100 ${HY - 100}Z M230 ${HY - 170} L205 ${HY - 136} L230 ${HY - 144} L256 ${HY - 132}Z" fill="#fff" opacity=".6"/>`; },
+  chalet(x, s, c, glow) { const y = 400; return `<rect x="${x - 44 * s}" y="${y - 50 * s}" width="${88 * s}" height="${50 * s}" fill="${c}"/><path d="M${x - 62 * s} ${y - 46 * s} L${x} ${y - 96 * s} L${x + 62 * s} ${y - 46 * s}Z" fill="${c}"/><rect x="${x - 30 * s}" y="${y - 40 * s}" width="${14 * s}" height="${14 * s}" fill="${glow}"/><rect x="${x + 16 * s}" y="${y - 40 * s}" width="${14 * s}" height="${14 * s}" fill="${glow}"/><rect x="${x - 6 * s}" y="${y - 74 * s}" width="${12 * s}" height="${12 * s}" fill="${glow}"/>`; },
+  rock(x, s, c) { return `<path d="M${x - 70} 340 Q ${x - 66} 270 ${x - 20} 262 Q ${x + 30} 250 ${x + 50} 300 Q ${x + 64} 330 ${x + 70} 340Z M${x + 80} 340 Q ${x + 90} 310 ${x + 110} 312 Q ${x + 126} 320 ${x + 126} 340Z" fill="${c}"/>`; },
+  kite(x, s, c) { return `<path d="M${x - 60} 120 Q ${x + 10} 70 ${x + 80} 110 Q ${x + 70} 124 ${x + 60} 120 Q ${x + 10} 96 ${x - 44} 132Z" fill="${c}"/><line x1="${x - 50}" y1="128" x2="${x - 30}" y2="330" stroke="${c}" stroke-width="1.2"/><line x1="${x + 70}" y1="118" x2="${x - 28}" y2="330" stroke="${c}" stroke-width="1.2"/><circle cx="${x - 30}" cy="322" r="5" fill="${c}"/><path d="M${x - 32} 326 L${x - 36} 346 M${x - 30} 328 L${x - 24} 346 M${x - 30} 330 L${x - 40} 334" stroke="${c}" stroke-width="3"/><path d="M${x - 50} 348 L${x - 14} 344" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`; },
+  surfer(x, s, c) { return `<path d="M${x - 140} 340 Q ${x - 40} 250 ${x + 60} 300 Q ${x - 10} 300 ${x - 40} 340Z" fill="${c}" opacity=".35"/><circle cx="${x}" cy="292" r="6" fill="${c}"/><path d="M${x} 298 L${x - 4} 316 L${x - 16} 326 M${x - 4} 316 L${x + 8} 326 M${x - 2} 304 L${x - 18} 300 M${x - 2} 304 L${x + 14} 310" stroke="${c}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M${x - 34} 330 Q ${x - 4} 322 ${x + 28} 330 Q ${x - 4} 336 ${x - 34} 330Z" fill="${c}"/>`; },
+  cablecar(x, s, c, glow) { return `<path d="M-10 120 Q 200 170 410 250" stroke="${c}" stroke-width="2" fill="none"/><rect x="236" y="176" width="3" height="20" fill="${c}"/><rect x="220" y="196" width="36" height="28" rx="5" fill="${c}"/><rect x="226" y="202" width="10" height="9" fill="${glow}"/><rect x="240" y="202" width="10" height="9" fill="${glow}"/><path d="M200 ${HY} L260 ${HY - 70} L330 ${HY - 90} L420 ${HY - 40} L420 ${HY}Z" fill="${c}" opacity=".6"/>`; },
+  camel(x, s, c) { const y = 345; return `<path d="M${x - 50} ${y - 50} Q ${x - 40} ${y - 84} ${x - 20} ${y - 60} Q ${x - 6} ${y - 90} ${x + 14} ${y - 60} Q ${x + 30} ${y - 54} ${x + 34} ${y - 70} L${x + 40} ${y - 92} Q ${x + 52} ${y - 100} ${x + 58} ${y - 88} L${x + 48} ${y - 84} L${x + 42} ${y - 56} Q ${x + 38} ${y - 40} ${x + 24} ${y - 40} L${x - 44} ${y - 40}Z" fill="${c}"/><path d="M${x - 40} ${y - 42} L${x - 44} ${y} M${x - 28} ${y - 42} L${x - 24} ${y} M${x + 10} ${y - 42} L${x + 6} ${y} M${x + 22} ${y - 42} L${x + 26} ${y}" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`; },
+  walls(x, s, c, glow) { const y = 335; let p = `<rect x="0" y="${y - 50}" width="400" height="60" fill="${c}"/>`;
+    for (let i = 0; i < 40; i++) p += `<rect x="${i * 10}" y="${y - 58}" width="6" height="9" fill="${c}"/>`;
+    p += `<rect x="${x - 34}" y="${y - 130}" width="68" height="90" fill="${c}"/><path d="M${x - 40} ${y - 130} L${x} ${y - 170} L${x + 40} ${y - 130}Z" fill="${c}"/>`;
+    [[60, 40], [110, 52], [300, 46], [345, 36]].forEach(([hx, hh]) => { p += `<rect x="${hx}" y="${y - 50 - hh}" width="38" height="${hh}" fill="${c}"/><path d="M${hx - 4} ${y - 50 - hh} L${hx + 19} ${y - 66 - hh} L${hx + 42} ${y - 50 - hh}Z" fill="${c}"/><rect x="${hx + 14}" y="${y - 40 - hh}" width="8" height="8" fill="${glow}" opacity=".7"/>`; });
+    return p; },
+};
+function scene(o) {
+  const look = LOOKS[o.look || o.id] || { sea: 1, ground: "beach", items: [] };
+  const [p0, h1, p2] = o.pal, p1 = mix(h1, "#FFB07A", .38), r = rng(o.id), id = "s" + o.id;
+  const top = mix(p0, "#1E2A5C", .5), dark = mix(p0, "#0A0E1C", .86), haze = mix(p1, dark, .32), mid = mix(p1, dark, .6);
+  const glow = "#FFE8B0", sx = 120 + r() * 160, sy = 170 + r() * 50;
+  let s = `<svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <linearGradient id="${id}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset=".45" stop-color="${p0}"/><stop offset=".62" stop-color="${p1}"/></linearGradient>
+    <radialGradient id="${id}g"><stop offset="0" stop-color="#FFF8E6"/><stop offset=".18" stop-color="#FFF1CC" stop-opacity=".95"/><stop offset=".4" stop-color="${p1}" stop-opacity=".45"/><stop offset="1" stop-color="${p1}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(p2, p1, .35)}"/><stop offset="1" stop-color="${mix(p2, dark, .55)}"/></linearGradient>
+    <filter id="blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="10"/></filter></defs>
+    <rect width="400" height="500" fill="url(#${id}k)"/>`;
+  if ((o.look || o.id) === "kef" || o.id === "nyc") s += Array.from({ length: 40 }, () => `<circle cx="${r() * 400}" cy="${r() * 200}" r="${.6 + r() * 1.2}" fill="#fff" opacity="${.3 + r() * .6}"/>`).join("");
+  s += `<circle cx="${sx}" cy="${sy}" r="150" fill="url(#${id}g)"/><circle cx="${sx}" cy="${sy}" r="30" fill="#FFF6DE"/>`;
+  for (let i = 0; i < 4; i++) { const cx = r() * 400, cy = 90 + r() * 120, w = 60 + r() * 90; s += `<ellipse cx="${cx}" cy="${cy}" rx="${w}" ry="${6 + r() * 6}" fill="#fff" opacity="${.12 + r() * .14}"/>`; }
+  // ferne Hügel
+  s += `<path d="M0 ${HY} L0 ${HY - 30} Q 70 ${HY - 60} 140 ${HY - 34} T 280 ${HY - 40} T 400 ${HY - 26} L400 ${HY}Z" fill="${haze}" opacity=".55"/>`;
+  const fg = look.items.filter(([n]) => ["aurora", "lemorne", "karst", "volcano", "matterhorn", "peaks", "cablecar", "bridge"].includes(n));
+  const fore = look.items.filter(x => !fg.includes(x));
+  fg.forEach(([n, x, sc]) => s += ITEMS[n](x, sc, n === "aurora" ? dark : mid, glow, r));
+  if (look.sea) {
+    s += `<rect y="${HY}" width="400" height="${500 - HY}" fill="url(#${id}w)"/>`;
+    for (let i = 0; i < 14; i++) { const yy = HY + 4 + i * i * 1.1, w = 50 - i * 2.2; s += `<rect x="${sx - w / 2 + (r() - .5) * 14}" y="${yy}" width="${w}" height="${1.5 + i * .15}" rx="1" fill="#FFF1CC" opacity="${.7 - i * .04}"/>`; }
+    for (let i = 0; i < 10; i++) { const yy = HY + 14 + r() * 180, xx = r() * 400; s += `<rect x="${xx}" y="${yy}" width="${20 + r() * 40}" height="1.5" fill="#fff" opacity=".18"/>`; }
+  } else {
+    s += `<path d="M0 ${HY - 10} Q 100 ${HY - 30} 200 ${HY - 14} T 400 ${HY - 18} L400 500 L0 500Z" fill="${mid}"/>`;
+  }
+  const g = {
+    beach: `<path d="M0 395 Q 120 372 250 392 T 400 386 L400 500 L0 500Z" fill="${dark}"/>`,
+    dune: `<path d="M0 380 Q 80 340 170 376 Q 260 410 400 366 L400 500 L0 500Z" fill="${dark}"/>`,
+    cliff: `<path d="M180 500 L180 360 Q 220 330 300 334 Q 360 336 400 350 L400 500Z M0 410 Q 60 400 120 420 L120 500 L0 500Z" fill="${dark}"/>`,
+    quay: `<rect y="360" width="400" height="140" fill="${dark}"/>`,
+    city: `<path d="M0 370 L400 370 L400 500 L0 500Z" fill="${dark}"/>` + Array.from({ length: 12 }, (_, i) => { const h = 20 + r() * 40, x = i * 34; return `<rect x="${x}" y="${370 - h}" width="30" height="${h}" fill="${dark}"/><path d="M${x - 3} ${370 - h} L${x + 15} ${358 - h} L${x + 33} ${370 - h}Z" fill="${dark}"/>`; }).join(""),
+    hills: `<path d="M0 352 Q 100 340 200 350 T 400 344 L400 500 L0 500Z" fill="${dark}"/>`,
+    rocks: `<path d="M0 360 Q 30 330 70 340 Q 110 320 140 360 L140 500 L0 500Z M300 500 L320 380 Q 360 350 400 370 L400 500Z" fill="${dark}"/>`,
+    lagoon: `<path d="M260 500 Q 300 420 400 410 L400 500Z" fill="${dark}"/>`,
+    lava: `<path d="M0 360 Q 120 340 240 362 T 400 350 L400 500 L0 500Z" fill="${dark}"/>`,
+    alps: `<path d="M0 380 Q 120 350 230 384 T 400 372 L400 500 L0 500Z" fill="${dark}"/>`,
+    snow: `<path d="M0 384 Q 140 360 260 392 T 400 380 L400 500 L0 500Z" fill="${dark}"/>`,
+    desert: `<path d="M0 370 Q 120 352 220 374 T 400 366 L400 500 L0 500Z" fill="${dark}"/>`,
+    none: "",
+  }[look.ground];
+  fore.forEach(([n, x, sc]) => s += ITEMS[n](x, sc, dark, glow, r));
+  s += g;
+  return s + `</svg>`;
+}
+
+
+/* Weitere Bilder pro Angebot: Hotel, Zimmer, Erlebnis */
+function tones(o) {
+  const [p0, h1, p2] = o.pal, p1 = mix(h1, "#FFB07A", .38);
+  return { p0, p1, p2, top: mix(p0, "#1E2A5C", .5), dark: mix(p0, "#0A0E1C", .86), mid: mix(p1, mix(p0, "#0A0E1C", .86), .6), glow: "#FFE8B0" };
+}
+function svgOpen(id, t, dusk) {
+  return `<svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <linearGradient id="${id}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${dusk ? mix(t.top, "#0A0E1C", .35) : t.top}"/><stop offset=".5" stop-color="${t.p0}"/><stop offset=".66" stop-color="${t.p1}"/></linearGradient>
+    <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FE3E8"/><stop offset="1" stop-color="#0F7FA0"/></linearGradient>
+    <radialGradient id="${id}l"><stop offset="0" stop-color="#FFE3A0" stop-opacity=".9"/><stop offset="1" stop-color="#FFE3A0" stop-opacity="0"/></radialGradient></defs>
+    <rect width="400" height="500" fill="url(#${id}k)"/>`;
+}
+const isBeachy = o => ["beach", "dune", "lagoon", "cliff", "rocks", "desert"].includes((LOOKS[o.look || o.id] || {}).ground);
+
+function sceneHotel(o) {
+  const t = tones(o), r = rng(o.id + "h"), id = "h" + o.id, look = LOOKS[o.look || o.id] || {};
+  let s = svgOpen(id, t, true) + `<circle cx="300" cy="150" r="20" fill="#FFF6DE" opacity=".9"/><circle cx="300" cy="150" r="70" fill="url(#${id}l)" opacity=".5"/>`;
+  s += Array.from({ length: 25 }, () => `<circle cx="${r() * 400}" cy="${r() * 160}" r="${.5 + r()}" fill="#fff" opacity="${.3 + r() * .5}"/>`).join("");
+  const snowy = ["snow", "alps"].includes(look.ground), cruise = o.types.includes("Kreuzfahrt");
+  if (cruise) {
+    s += `<rect x="0" y="200" width="400" height="300" fill="${t.dark}"/>`;
+    for (let row = 0; row < 3; row++) for (let i = 0; i < 16; i++) s += `<rect x="${8 + i * 25}" y="${215 + row * 28}" width="16" height="14" rx="2" fill="${t.glow}" opacity="${r() > .3 ? .8 : .15}"/>`;
+    s += `<path d="M0 300 L400 300" stroke="${t.glow}" stroke-opacity=".5" stroke-width="2"/>` + Array.from({ length: 20 }, (_, i) => `<line x1="${i * 21}" y1="300" x2="${i * 21}" y2="322" stroke="${t.dark}" stroke-width="2"/>`).join("");
+  } else {
+    const bx = 40, bw = 320, bh = snowy ? 150 : 190, by = 330 - bh;
+    s += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="${t.dark}"/>`;
+    if (snowy) s += `<path d="M${bx - 30} ${by + 4} L200 ${by - 80} L${bx + bw + 30} ${by + 4}Z" fill="${t.dark}"/><path d="M${bx - 30} ${by + 4} L200 ${by - 80} L${bx + bw + 30} ${by + 4}" stroke="#fff" stroke-opacity=".7" stroke-width="5" fill="none"/>`;
+    else s += `<rect x="${bx + 110}" y="${by - 34}" width="100" height="34" fill="${t.dark}"/><rect x="${bx + 130}" y="${by - 26}" width="60" height="8" fill="${t.glow}" opacity=".6"/>`;
+    for (let row = 0; row < (snowy ? 4 : 6); row++) for (let i = 0; i < 9; i++) { const lit = r() > .35; s += `<rect x="${bx + 14 + i * 34}" y="${by + 16 + row * 28}" width="20" height="14" fill="${lit ? t.glow : t.mid}" opacity="${lit ? .85 : .5}"/>`; if (!snowy) s += `<rect x="${bx + 10 + i * 34}" y="${by + 30 + row * 28}" width="28" height="2" fill="${t.mid}"/>`; }
+  }
+  if (isBeachy(o) || cruise || look.ground === "none" || look.ground === "quay") {
+    if (!cruise) { s += ITEMS.palm(20, .9, t.dark, t.glow, r) + ITEMS.palm(390, 1, t.dark, t.glow, r); }
+    s += `<rect x="0" y="330" width="400" height="170" fill="${t.dark}"/><rect x="30" y="355" width="340" height="90" rx="6" fill="url(#${id}p)"/>`;
+    for (let i = 0; i < 9; i++) s += `<path d="M${50 + r() * 280} ${370 + r() * 64} q 10 -4 20 0 t 20 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" fill="none"/>`;
+    for (let i = 0; i < 4; i++) { const lx = 50 + i * 90; s += `<path d="M${lx} 470 L${lx + 50} 470 L${lx + 64} 452" stroke="${mix(t.dark, "#ffffff", .25)}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M${lx + 4} 470 v12 M${lx + 46} 470 v12" stroke="${mix(t.dark, "#ffffff", .25)}" stroke-width="3"/>`; }
+  } else {
+    s += `<rect x="0" y="330" width="400" height="170" fill="${t.dark}"/><path d="M150 330 L250 330 L290 500 L110 500Z" fill="${mix(t.dark, "#ffffff", .08)}"/>`;
+    [[60, 330], [340, 330]].forEach(([lx]) => s += `<rect x="${lx - 2}" y="270" width="4" height="60" fill="${t.dark}"/><circle cx="${lx}" cy="268" r="7" fill="${t.glow}"/><circle cx="${lx}" cy="268" r="40" fill="url(#${id}l)"/>`);
+    s += `<rect x="170" y="290" width="60" height="40" fill="${t.glow}" opacity=".85"/><rect x="198" y="290" width="4" height="40" fill="${t.dark}"/>`;
+  }
+  return s + `</svg>`;
+}
+
+function sceneRoom(o) {
+  const t = tones(o), id = "r" + o.id, look = LOOKS[o.look || o.id] || {}, sea = look.sea;
+  const wall = mix(t.dark, "#6B4B3A", .25), wall2 = mix(wall, "#000000", .25), sheet = mix("#F4EDE4", t.p1, .15);
+  let s = `<svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <linearGradient id="${id}k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.p0}"/><stop offset="1" stop-color="${t.p1}"/></linearGradient>
+    <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(t.p2, t.p1, .3)}"/><stop offset="1" stop-color="${mix(t.p2, t.dark, .4)}"/></linearGradient>
+    <radialGradient id="${id}l"><stop offset="0" stop-color="#FFD98A" stop-opacity=".75"/><stop offset="1" stop-color="#FFD98A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(wall, "#C9A27E", .35)}"/><stop offset="1" stop-color="${wall2}"/></linearGradient></defs>
+    <rect width="400" height="500" fill="${wall}"/>
+    <rect x="70" y="40" width="260" height="220" fill="url(#${id}k)"/><circle cx="250" cy="150" r="22" fill="#FFF6DE"/>`;
+  s += sea ? `<rect x="70" y="175" width="260" height="85" fill="url(#${id}s)"/><rect x="235" y="180" width="30" height="2" fill="#FFF1CC" opacity=".7"/><rect x="240" y="188" width="20" height="2" fill="#FFF1CC" opacity=".5"/>`
+    : `<path d="M70 260 L70 190 L140 140 L200 190 L260 120 L330 180 L330 260Z" fill="${t.mid}"/>`;
+  s += `<rect x="64" y="34" width="272" height="232" fill="none" stroke="${wall2}" stroke-width="12"/><rect x="196" y="40" width="8" height="220" fill="${wall2}"/>
+    <path d="M40 20 Q 70 150 52 290 L20 290 L20 20Z M360 20 Q 330 150 348 290 L380 290 L380 20Z" fill="${mix(t.p1, wall, .55)}" opacity=".9"/>
+    <rect y="300" width="400" height="200" fill="url(#${id}f)"/>
+    <rect x="40" y="250" width="320" height="70" rx="8" fill="${wall2}"/>
+    <rect x="30" y="310" width="340" height="110" rx="10" fill="${sheet}"/>
+    <path d="M30 360 Q 200 340 370 360 L370 420 Q 200 430 30 420Z" fill="${mix(sheet, t.p2, .35)}"/>
+    <rect x="70" y="290" width="110" height="40" rx="14" fill="#fff" opacity=".95"/><rect x="220" y="290" width="110" height="40" rx="14" fill="#fff" opacity=".95"/>
+    <rect x="30" y="420" width="340" height="14" fill="${wall2}"/>
+    <circle cx="22" cy="250" r="90" fill="url(#${id}l)"/><path d="M8 230 L36 230 L30 210 L14 210Z" fill="#FFE7B5"/>
+    <circle cx="378" cy="250" r="90" fill="url(#${id}l)"/><path d="M364 230 L392 230 L386 210 L370 210Z" fill="#FFE7B5"/>`;
+  return s + `</svg>`;
+}
+
+function sceneActivity(o) {
+  const t = tones(o), r = rng(o.id + "a"), id = "a" + o.id, look = LOOKS[o.look || o.id] || {};
+  let s = svgOpen(id, t, false) + `<circle cx="110" cy="180" r="34" fill="#FFF6DE"/><circle cx="110" cy="180" r="120" fill="url(#${id}l)" opacity=".6"/>`;
+  const kind = o.types.includes("Kreuzfahrt") ? "deck" : ["snow", "alps"].includes(look.ground) ? "ski" : (o.look || o.id) === "kef" ? "road" : o.types.includes("Städtereise") || look.ground === "city" ? "cafe" : "beach";
+  if (kind === "beach") {
+    s += `<rect y="300" width="400" height="200" fill="${mix(t.p2, t.p1, .2)}"/>` + Array.from({ length: 8 }, () => `<rect x="${r() * 400}" y="${310 + r() * 60}" width="${20 + r() * 30}" height="1.5" fill="#fff" opacity=".35"/>`).join("") +
+      `<path d="M0 380 Q 200 360 400 384 L400 500 L0 500Z" fill="${mix("#F2D9A8", t.p1, .25)}"/>` +
+      `<path d="M150 250 Q 230 200 310 250Z" fill="#FF6B5A"/><path d="M190 237 Q 230 200 270 237" fill="#fff" opacity=".9"/><rect x="228" y="236" width="4" height="190" fill="${t.dark}"/>` +
+      [[120, 440], [250, 450]].map(([x, y]) => `<path d="M${x} ${y} L${x + 90} ${y} L${x + 112} ${y - 34}" stroke="${t.dark}" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M${x + 6} ${y} v18 M${x + 84} ${y} v18" stroke="${t.dark}" stroke-width="5"/>`).join("") +
+      `<path d="M60 470 L82 470 L78 440 L64 440Z" fill="#fff" opacity=".85"/><rect x="62" y="446" width="18" height="10" fill="#FF8A3D"/><path d="M76 440 L86 420" stroke="${t.dark}" stroke-width="2"/>`;
+  } else if (kind === "cafe") {
+    s += ITEMS.skyline(200, .9, t.mid, t.glow, r) + `<rect y="330" width="400" height="170" fill="${t.dark}"/>` +
+      `<path d="M0 60 Q 100 110 200 70 T 400 80" stroke="${t.dark}" stroke-width="1.5" fill="none"/>` + Array.from({ length: 14 }, (_, i) => { const x = i * 30 + 10, y = 60 + Math.sin(i / 2) * 18 + 16; return `<circle cx="${x}" cy="${y}" r="4" fill="${t.glow}"/><circle cx="${x}" cy="${y}" r="12" fill="${t.glow}" opacity=".25"/>`; }).join("") +
+      `<ellipse cx="200" cy="380" rx="90" ry="14" fill="${mix(t.dark, "#ffffff", .35)}"/><rect x="196" y="380" width="8" height="90" fill="${t.dark}"/><path d="M160 480 L240 480" stroke="${t.dark}" stroke-width="6"/>` +
+      `<path d="M180 372 L176 352 L194 352 L190 372Z" fill="#fff"/><path d="M216 372 Q 214 350 222 346 Q 230 350 228 372Z" fill="#B23A48"/>` +
+      [[80, 1], [320, -1]].map(([x, d]) => `<path d="M${x} 400 L${x} 480 M${x + 40 * d} 400 L${x + 40 * d} 480 M${x} 430 L${x + 40 * d} 430 M${x} 430 L${x} 350" stroke="${mix(t.dark, "#000", .2)}" stroke-width="6" fill="none"/>`).join("");
+  } else if (kind === "ski") {
+    s += ITEMS.peaks(200, 1, t.mid, t.glow, r) + `<path d="M0 260 Q 200 300 400 420 L400 500 L0 500Z" fill="#F4F8FC"/><path d="M0 330 Q 160 360 400 470 L400 500 L0 500Z" fill="#E2ECF5"/>` +
+      `<path d="M150 360 q 30 -10 60 4" stroke="#C9D8E6" stroke-width="3" fill="none"/>` +
+      `<circle cx="230" cy="300" r="9" fill="${t.dark}"/><path d="M230 309 L222 340 L238 360 M222 340 L206 362 M228 316 L250 330 M228 316 L210 320" stroke="${t.dark}" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M190 366 L256 380" stroke="${t.dark}" stroke-width="4" stroke-linecap="round"/><path d="M250 330 L270 380 M210 320 L196 372" stroke="${t.dark}" stroke-width="2"/>` +
+      [[50, 340], [80, 360], [360, 450]].map(([x, y]) => `<path d="M${x} ${y} l14 -40 l14 40z M${x + 3} ${y - 16} l11 -32 l11 32z" fill="${t.dark}"/>`).join("");
+  } else if (kind === "road") {
+    s += ITEMS.aurora(0, 1, t.dark, t.glow, r) + ITEMS.volcano(260, 1, t.mid, t.glow, r) + `<rect y="320" width="400" height="180" fill="${t.dark}"/><path d="M170 320 L230 320 L330 500 L70 500Z" fill="${mix(t.dark, "#ffffff", .12)}"/>` +
+      Array.from({ length: 5 }, (_, i) => `<rect x="${198 - i}" y="${330 + i * i * 7}" width="${4 + i * 2}" height="${8 + i * 4}" fill="#fff" opacity=".7"/>`).join("") +
+      `<rect x="150" y="410" width="100" height="40" rx="10" fill="${mix(t.dark, "#000", .3)}"/><path d="M165 410 L180 385 L222 385 L238 410Z" fill="${mix(t.dark, "#000", .3)}"/><circle cx="170" cy="452" r="10" fill="#111"/><circle cx="232" cy="452" r="10" fill="#111"/><rect x="152" y="424" width="12" height="7" fill="#FF3B3B"/><rect x="236" y="424" width="12" height="7" fill="#FF3B3B"/>`;
+  } else {
+    s += `<rect y="300" width="400" height="200" fill="${mix(t.p2, t.dark, .2)}"/>` + Array.from({ length: 10 }, () => `<rect x="${r() * 400}" y="${310 + r() * 80}" width="${20 + r() * 30}" height="1.5" fill="#fff" opacity=".3"/>`).join("") +
+      `<rect y="390" width="400" height="110" fill="${mix("#C79A6B", t.dark, .35)}"/><path d="M0 330 L400 330 M0 360 L400 360" stroke="${t.dark}" stroke-width="4"/>` + Array.from({ length: 11 }, (_, i) => `<rect x="${i * 40}" y="330" width="4" height="62" fill="${t.dark}"/>`).join("") +
+      `<circle cx="250" cy="282" r="10" fill="${t.dark}"/><path d="M250 292 L250 340 M250 340 L242 392 M250 340 L258 392 M250 304 L232 330 M250 304 L270 296" stroke="${t.dark}" stroke-width="8" stroke-linecap="round"/><circle cx="280" cy="290" r="9" fill="${t.dark}"/><path d="M280 299 L282 345 L274 392 M282 345 L290 392 M281 310 L270 297" stroke="${t.dark}" stroke-width="8" stroke-linecap="round"/>`;
+  }
+  return s + `</svg>`;
+}
+const ACT_LABEL = { beach: "Strand", cafe: "Stadtleben", ski: "Auf der Piste", road: "Unterwegs", deck: "An Deck" };
+function photos(o) {
+  const look = LOOKS[o.look || o.id] || {};
+  const kind = o.types.includes("Kreuzfahrt") ? "deck" : ["snow", "alps"].includes(look.ground) ? "ski" : (o.look || o.id) === "kef" ? "road" : o.types.includes("Städtereise") || look.ground === "city" ? "cafe" : "beach";
+  return [
+    { label: o.place, svg: scene(o) },
+    { label: o.hotel, svg: sceneHotel(o) },
+    { label: o.types.includes("Kreuzfahrt") ? "Balkonkabine" : "Zimmer", svg: sceneRoom(o) },
+    { label: ACT_LABEL[kind], svg: sceneActivity(o) },
+  ];
+}
+
+/* ================= Zustand ================= */
+const TODAY = new Date(2026, 9, 8);
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const DEFAULTS = () => ({ types: [], hours: 6, countries: [], adults: 2, kids: 0, ages: [], from: iso(TODAY), to: iso(addDays(TODAY, 60)) });
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("reisetinder:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("reisetinder:" + k, JSON.stringify(v)); } catch {} },
+};
+let filters = Object.assign(DEFAULTS(), store.get("filters2", {}));
+let draft = structuredClone(filters);
+let liked = store.get("liked", []);
+let seen = store.get("seen", []);
+let queue = [];
+let listMode = "liked";
+
+const $ = s => document.querySelector(s);
+const chf = n => "CHF " + Math.round(n).toLocaleString("de-CH");
+const fmtDate = d => d.toLocaleDateString("de-CH", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const hrs = h => (h % 1 ? String(h).replace(".", ",") : h) + " h";
+const hoursLabel = h => { const H = Math.floor(h), m = Math.round((h - H) * 60); return m ? `${H} h ${m} min` : `${H} h`; };
+
+function nextDeparture(o, f) {
+  let from = new Date(f.from + "T00:00"), to = new Date(f.to + "T00:00");
+  if (o.from) { const a = new Date(o.from + "T00:00"); if (a > from) from = a; }
+  if (o.until) { const b = new Date(o.until + "T00:00"); if (b < to) to = b; }
+  for (let d = new Date(from); d <= to; d = addDays(d, 1))
+    if ((o.dep == null || d.getDay() === o.dep) && (!o.months || o.months.includes(d.getMonth() + 1))) return d;
+  return null;
+}
+function matches(o, f) {
+  if (f.types.length && !f.types.some(t => o.types.includes(t))) return false;
+  if (o.hours > f.hours) return false;
+  if (f.countries.length && !f.countries.includes(o.country)) return false;
+  if (f.kids > 0 && !o.kids) return false;
+  return !!nextDeparture(o, f);
+}
+const results = f => OFFERS.filter(o => matches(o, f)).sort((a, b) => a.hours - b.hours);
+const total = (o, f) => o.price * f.adults + (o.child || 0) * f.kids;
+
+/* ================= Deck ================= */
+function buildQueue() { queue = results(filters).filter(o => !seen.includes(o.id)); }
+
+const ICON = {
+  heart: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`,
+  moon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5z"/></svg>`,
+  fork: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.5 1.5-3.5 4-3.5 8h3.5"/></svg>`,
+  tag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>`,
+  plane: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-6l8 2.5z"/></svg>`,
+  train: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8 2 4 2.5 4 6v9.5A3.5 3.5 0 0 0 7.5 19L6 20.5v.5h2.2l2-2h3.6l2 2H18v-.5L16.5 19a3.5 3.5 0 0 0 3.5-3.5V6c0-3.5-4-4-8-4zM7.5 17a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM11 10H6V6h5v4zm5.5 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM18 10h-5V6h5v4z"/></svg>`,
+  bus: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 16c0 .9.4 1.7 1 2.2V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.8c.6-.5 1-1.3 1-2.2V6c0-3.5-3.6-4-8-4s-8 .5-8 4v10zm3.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm1.5-6H6V6h12v5z"/></svg>`,
+};
+function cardHTML(o) {
+  const lm = o.types.includes("Last Minute");
+  const ph = photos(o);
+  return `<div class="art"><div class="gal">${ph.map((p, i) => `<div class="ph${i ? "" : " on"}" data-label="${p.label}">${p.svg}</div>`).join("")}</div>
+      <div class="bars">${ph.map((_, i) => `<span class="${i ? "" : "on"}"></span>`).join("")}</div>
+      ${lm ? `<div class="badge-lm" style="top:56px">Last Minute</div>` : ""}
+      <div class="badge-lm right" style="font-family:var(--mono);letter-spacing:0">${o.mode === "Flug" ? ICON.plane : o.mode === "Bus" ? ICON.bus : ICON.train}ZRH → ${o.iata} · ${hrs(o.hours)}</div>
+      <div class="stamp like">VOLO</div><div class="stamp nope">NON</div>
+      <div class="pricetag"><small>ab p.P.</small><b>${chf(o.price)}</b></div>
+      <div class="over"><div class="cap">${ph[0].label}</div><div class="place">${o.place}</div><div class="country">${o.hotel} · ${o.country}${o.stars ? ` · <span style="color:#FFD36B">${"★".repeat(o.stars)}</span>` : ""}</div>
+        <div class="facts"><span class="fact">${ICON.moon}${o.dur || o.nights + " Nächte"}</span><span class="fact">${ICON.fork}${o.board.replace("Ultra ", "")}</span>${o.rec ? `<span class="fact">${ICON.heart}${o.rec} % empfehlen</span>` : ""}</div>
+        <div class="tags" style="margin-top:4px">${o.types.filter(t => t !== "Last Minute").map(t => `<span class="tag">${t}</span>`).join("")}</div></div>
+    </div>`;
+}
+
+function renderDeck() {
+  const deck = $("#deck");
+  deck.innerHTML = "";
+  if (!queue.length) {
+    const any = results(filters).length;
+    deck.innerHTML = `<div class="empty"><div><h2>${any ? "Alle Angebote angeschaut" : "Keine Angebote gefunden"}</h2>
+      <p>${any ? `Du hast ${liked.length} Angebot${liked.length === 1 ? "" : "e"} gemerkt. Schau sie dir an oder starte die Runde neu.` : "Versuche eine längere Reisezeit, mehr Länder oder ein anderes Datum."}</p>
+      <div class="btn-row">${any ? `<button class="btn" data-go="saved">Gemerkte ansehen</button><button class="btn ghost" id="restart">Neu starten</button>` : `<button class="btn" data-go="filter">Filter anpassen</button>`}</div></div></div>`;
+    deck.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
+    const rs = $("#restart"); if (rs) rs.onclick = () => { const ids = results(filters).map(o => o.id); seen = seen.filter(id => !ids.includes(id)); store.set("seen", seen); buildQueue(); renderDeck(); };
+    return;
+  }
+
+  queue.slice(0, 3).reverse().forEach((o, i, arr) => {
+    const depth = arr.length - 1 - i;
+    const el = document.createElement("article");
+    el.className = "card"; el.dataset.id = o.id;
+    el.setAttribute("aria-label", `${o.place}, ${o.country}, ab ${chf(o.price)} pro Person`);
+    el.innerHTML = cardHTML(o);
+    el.style.transform = `translateY(${depth * 10}px) scale(${1 - depth * 0.04})`;
+    el.style.zIndex = 10 - depth;
+    if (depth === 0) attachDrag(el, o);
+    deck.appendChild(el);
+  });
+  updateSummary();
+}
+
+function attachDrag(el, o) {
+  let sx = 0, sy = 0, dx = 0, dy = 0, down = false;
+  const like = el.querySelector(".stamp.like"), nope = el.querySelector(".stamp.nope");
+  el.addEventListener("pointerdown", e => { down = true; sx = e.clientX; sy = e.clientY; dx = dy = 0; el.setPointerCapture(e.pointerId); el.classList.add("dragging"); });
+  el.addEventListener("pointermove", e => {
+    if (!down) return; dx = e.clientX - sx; dy = e.clientY - sy;
+    el.style.transform = `translate(${dx}px, ${dy * 0.4}px) rotate(${dx / 18}deg)`;
+    like.style.opacity = Math.max(0, Math.min(1, dx / 90)); nope.style.opacity = Math.max(0, Math.min(1, -dx / 90)); react(dx);
+  });
+  const end = e => {
+    if (!down) return; down = false; el.classList.remove("dragging");
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
+      el.style.transform = "";
+      const art = el.querySelector(".art").getBoundingClientRect();
+      if (e.type === "pointerup" && e.clientY < art.bottom) { const x = (e.clientX - art.left) / art.width; if (x < 1 / 3) stepPhoto(el, -1); else if (x > 2 / 3) stepPhoto(el, 1); else openDetail(o); }
+      else openDetail(o);
+      return;
+    }
+    if (dx > 100) decide(true, el); else if (dx < -100) decide(false, el);
+    else { el.style.transform = ""; like.style.opacity = nope.style.opacity = 0; react(0); }
+  };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+}
+
+function stepPhoto(el, d) {
+  const ph = [...el.querySelectorAll(".ph")], bars = [...el.querySelectorAll(".bars span")];
+  const i = ph.findIndex(p => p.classList.contains("on")), n = i + d;
+  if (n < 0 || n >= ph.length) { el.classList.remove("bump-l", "bump-r"); void el.offsetWidth; el.classList.add(d < 0 ? "bump-l" : "bump-r"); return; }
+  ph[i].classList.remove("on"); ph[n].classList.add("on"); bars[i].classList.remove("on"); bars[n].classList.add("on");
+  el.querySelector(".cap").textContent = ph[n].dataset.label;
+}
+function react(dx) {
+  const L = $("#b-like"), N = $("#b-nope");
+  L.style.transform = dx > 0 ? `scale(${1 + Math.min(dx, 140) / 560})` : ""; N.style.transform = dx < 0 ? `scale(${1 + Math.min(-dx, 140) / 560})` : "";
+  L.classList.toggle("hot", dx > 70); N.classList.toggle("hot", dx < -70);
+}
+function decide(isLike, el) {
+  const o = queue[0]; if (!o) return;
+  el = el || document.querySelector(`.card[data-id="${o.id}"]`);
+  if (!el) return;
+  el.querySelector(isLike ? ".stamp.like" : ".stamp.nope").style.opacity = 1;
+  el.style.transform = `translate(${isLike ? 600 : -600}px, 40px) rotate(${isLike ? 28 : -28}deg)`;
+  el.style.opacity = 0;
+  const btn = $(isLike ? "#b-like" : "#b-nope"); btn.classList.add("hot"); setTimeout(() => { react(0); }, 320);
+  seen.push(o.id); store.set("seen", seen);
+  if (isLike && !liked.includes(o.id)) { liked.push(o.id); store.set("liked", liked); }
+  if (isLike) { const b = $("#b-like"); b.classList.remove("pulse"); void b.offsetWidth; b.classList.add("pulse"); if (!store.get("matchSeen", false)) { store.set("matchSeen", true); setTimeout(() => showMatch(o), 280); } else toast(`${o.place} gemerkt`); }
+  updateCount(); if (isDesk()) renderList();
+  queue.shift();
+  setTimeout(renderDeck, 260);
+}
+
+/* ================= Match ================= */
+let matchOffer = null, confettiRun = 0;
+function showMatch(o) {
+  matchOffer = o;
+  $("#match-pic").innerHTML = scene(o);
+  $("#match-text").innerHTML = `<b>${o.place}</b> passt zu dir.<br>${o.dur || o.nights + " Nächte"} ab <b>${chf(o.price)}</b> p.P.`;
+  $("#match").hidden = false; $("#match-open").focus();
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) confetti();
+}
+function hideMatch() { $("#match").hidden = true; confettiRun++; }
+$("#match-close").onclick = hideMatch;
+$("#match-open").onclick = () => { const o = matchOffer; hideMatch(); openDetail(o); };
+function confetti() {
+  const cv = $("#confetti"), ctx = cv.getContext("2d"), run = ++confettiRun, dpr = devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.scale(dpr, dpr);
+  const cols = ["#E0623F", "#1D6F80", "#F2B57A", "#141414", "#FFFFFF"];
+  const parts = Array.from({ length: 140 }, (_, i) => ({ x: innerWidth / 2, y: innerHeight * .42, vx: (Math.random() - .5) * 16, vy: -Math.random() * 15 - 4,
+    s: 5 + Math.random() * 7, c: cols[i % cols.length], r: Math.random() * 6, vr: (Math.random() - .5) * .3, heart: i % 5 === 0 }));
+  const t0 = performance.now();
+  (function frame(t) {
+    if (run !== confettiRun) return ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const p of parts) {
+      p.vy += .32; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+      if (p.heart) { const k = p.s / 10; ctx.beginPath(); ctx.moveTo(0, 3 * k); ctx.bezierCurveTo(-10 * k, -4 * k, -4 * k, -10 * k, 0, -4 * k); ctx.bezierCurveTo(4 * k, -10 * k, 10 * k, -4 * k, 0, 3 * k); ctx.fill(); }
+      else ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+      ctx.restore();
+    }
+    if (t - t0 < 3200) requestAnimationFrame(frame); else ctx.clearRect(0, 0, innerWidth, innerHeight);
+  })(t0);
+}
+
+/* ================= Liste ================= */
+function renderList() {
+  $("#seg-liked").setAttribute("aria-pressed", listMode === "liked");
+  $("#seg-all").setAttribute("aria-pressed", listMode === "all");
+  $("#clear-saved").hidden = listMode !== "liked" || !liked.length;
+  const items = listMode === "liked" ? liked.map(id => OFFERS.find(o => o.id === id)).filter(Boolean) : results(filters);
+  const list = $("#list");
+  if (!items.length) {
+    list.innerHTML = `<div class="box"><h3>${listMode === "liked" ? "Noch nichts gemerkt" : "Keine Treffer"}</h3><p>${listMode === "liked" ? "Wische Angebote nach rechts, dann landen sie hier." : "Passe die Filter an, um mehr Angebote zu sehen."}</p></div>`;
+    return;
+  }
+  list.innerHTML = items.map(o => `<button class="row" data-id="${o.id}"><div class="thumb">${scene(o)}</div>
+    <div class="t"><b>${o.place}</b><span>${o.hotel} · ${o.dur || o.nights + " N."}</span><span>${o.mode} ${hrs(o.hours)} · ${o.country}</span></div>
+    <div class="p">${chf(total(o, filters))}<small>${filters.adults + filters.kids} Pers.</small></div></button>`).join("");
+  list.querySelectorAll(".row").forEach(b => b.onclick = () => openDetail(OFFERS.find(o => o.id === b.dataset.id)));
+}
+
+/* ================= Detail ================= */
+function openDetail(o) {
+  const f = filters, dep = nextDeparture(o, f) || nextDeparture(o, { from: iso(TODAY), to: iso(addDays(TODAY, 365)) });
+  const ret = addDays(dep, o.nights), ag = AGENCIES[o.agency], isLiked = liked.includes(o.id);
+  const travellers = `${f.adults} Erw.${f.kids ? ` + ${f.kids} Kind${f.kids > 1 ? "er" : ""}` : ""}`;
+  const childLine = f.kids ? `<div><span>${f.kids} × Kind${f.ages.length ? ` (${f.ages.join(", ")} J.)` : ""}</span><span>${o.child == null ? "Preis beim Anbieter" : o.child ? chf(o.child * f.kids) : "gratis"}</span></div>` : "";
+  $("#sheet").innerHTML = `
+    <div class="hero"><div class="strip" id="strip">${photos(o).map(p => `<div><span class="hcap">${p.label}</span>${p.svg}</div>`).join("")}</div><button class="gnav prev" id="gprev" aria-label="Vorheriges Bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><button class="gnav next" id="gnext" aria-label="Nächstes Bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button><div class="dots" id="dots">${photos(o).map((_, i) => `<button aria-label="Bild ${i + 1}" class="${i ? "" : "on"}"></button>`).join("")}</div><button class="close" id="close" aria-label="Schliessen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button></div>
+    <div class="body">
+      <div class="pass">
+        <div class="head">${o.stars ? `<span class="stars" aria-label="${o.stars} Sterne">${"★".repeat(o.stars)}</span>` : ""}<h1>${o.hotel}</h1><div class="sub">${[o.region, o.place, o.country].filter(Boolean).join(" · ")}${o.rec ? ` · ${o.rec} % Weiterempfehlung (HolidayCheck)` : ""}</div></div>
+        <div class="route"><div class="iata">ZRH<small>Zürich</small></div><div class="line"><span>${o.mode} · ${hoursLabel(o.hours)}</span></div><div class="iata" style="text-align:right">${o.iata}<small>${o.place}</small></div></div>
+        <div class="perf"></div>
+        <div class="kv">
+          <div><small>Hinreise</small><b>${fmtDate(dep)}</b></div>
+          <div><small>Rückreise</small><b>${fmtDate(ret)}</b></div>
+          <div><small>Dauer</small><b>${o.dur || o.nights + " Nächte"}</b></div>
+          <div><small>Verpflegung</small><b>${o.board}</b></div>
+          <div><small>Reiseart</small><b>${o.types.join(", ")}</b></div>
+          <div><small>Reisende</small><b>${travellers}</b></div>
+          <div><small>Kinder</small><b>${o.kids ? "willkommen" : "nur Erwachsene"}</b></div>
+          <div><small>Veranstalter</small><b>${ag.name}</b></div>
+        </div>
+      </div>
+      <div class="box"><h3>Über das Angebot</h3><p>${o.text}</p></div>
+      <div class="box"><h3>Inbegriffen</h3><ul class="incl">${o.incl.map(i => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg><span>${i}</span></li>`).join("")}</ul></div>
+      <div class="box"><h3>Preis</h3><div class="pricing">
+        <div><span>${f.adults} × Erwachsene à ${chf(o.price)}</span><span>${chf(o.price * f.adults)}</span></div>${childLine}
+        <div class="tot"><span>Total</span><span>${chf(total(o, f))}</span></div></div>
+        <p class="note" style="margin-top:10px">${o.was ? `Statt ${chf(o.was)} p.P. ` : ""}Ab-Preis pro Person bei 2 Erwachsenen laut ${ag.name}, Stand 8. Oktober 2026.${o.child == null && f.kids ? " Kinderpreise berechnet der Anbieter je nach Alter." : ""} Der verbindliche Preis wird beim Anbieter berechnet.</p></div>
+      <div class="box advisor"><div class="avatar">${ag.name[0]}</div><div><b>Fragen zum Angebot?</b><small>Reiseberatung von ${ag.name} · online</small></div><button class="btn" id="open-chat">Chatten</button></div>
+      <div class="btn-row"><button class="btn ghost" id="toggle-like">${isLiked ? "Aus Merkliste entfernen" : "Merken"}</button></div>
+    </div>
+    <div class="bookbar"><div class="pp"><small>Total für ${travellers}</small><b>${chf(total(o, f))}</b></div>
+      <button class="chatbtn" id="open-chat2" aria-label="Chat mit der Reiseberatung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><span class="dot"></span></button>
+      <a class="btn" href="${o.url || ag.url}" target="_blank" rel="noopener">Bei ${ag.name} buchen</a></div>`;
+  $("#sheet").classList.add("open"); $("#sheet").scrollTop = 0; $("#sheet .body").scrollTop = 0;
+  const strip = $("#strip"), dots = [...document.querySelectorAll("#dots button")];
+  const go = d => { const n = dots.length, i = Math.round(strip.scrollLeft / strip.clientWidth); strip.scrollTo({ left: ((i + d + n) % n) * strip.clientWidth, behavior: "smooth" }); };
+  $("#gprev").onclick = () => go(-1); $("#gnext").onclick = () => go(1);
+  strip.onclick = e => { const r = strip.getBoundingClientRect(); go(e.clientX < r.left + r.width / 2 ? -1 : 1); };
+  strip.onscroll = () => { const i = Math.round(strip.scrollLeft / strip.clientWidth); dots.forEach((d, k) => d.classList.toggle("on", k === i)); };
+  dots.forEach((d, k) => d.onclick = () => strip.scrollTo({ left: k * strip.clientWidth, behavior: "smooth" }));
+  $("#close").onclick = closeDetail; $("#close").focus();
+  chatCtx = { o, dep, ret, ag };
+  $("#open-chat").onclick = $("#open-chat2").onclick = openChat;
+  $("#toggle-like").onclick = () => {
+    liked = liked.includes(o.id) ? liked.filter(x => x !== o.id) : [...liked, o.id]; store.set("liked", liked);
+    updateCount(); if (isDesk() || !$("#v-saved").hidden) renderList(); openDetail(o);
+  };
+}
+function closeDetail() { $("#sheet").classList.remove("open"); closeChat(); }
+
+/* ================= Chat (Demo) ================= */
+let chatCtx = null;
+const chats = {};
+function openChat() {
+  const { o, ag } = chatCtx;
+  $("#chat-av").textContent = ag.name[0];
+  $("#chat-title").textContent = `Reiseberatung ${ag.name}`;
+  $("#chat-sub").textContent = `zu ${o.hotel} · ${o.place}`;
+  if (!chats[o.id]) chats[o.id] = [{ me: false, t: `Hallo! Hier ist die Reiseberatung von ${ag.name}. Wie kann ich dir zum Angebot ${o.hotel} in ${o.place} helfen?` }];
+  renderMsgs();
+  $("#quick").innerHTML = ["Ist das noch verfügbar?", "Was ist inbegriffen?", "Geht ein anderes Datum?", "Kinder willkommen?", "Wie viel Gepäck?", "Gibt es Rabatt?"].map(q => `<button type="button">${q}</button>`).join("");
+  $("#quick").querySelectorAll("button").forEach(b => b.onclick = () => send(b.textContent));
+  $("#chat").classList.add("open"); setTimeout(() => $("#chat-input").focus(), 300);
+}
+function closeChat() { $("#chat").classList.remove("open"); }
+function renderMsgs(typing) {
+  const list = chats[chatCtx.o.id];
+  $("#msgs").innerHTML = `<div class="demo-note">Prototyp: Antworten kommen automatisch. Verbindliche Auskünfte gibt der Anbieter.</div>` +
+    list.map(m => `<div class="msg ${m.me ? "me" : "them"}"></div>`).join("") + (typing ? `<div class="msg them typing"><i></i><i></i><i></i></div>` : "");
+  [...$("#msgs").querySelectorAll(".msg:not(.typing)")].forEach((el, i) => el.textContent = list[i].t);
+  $("#msgs").scrollTop = $("#msgs").scrollHeight;
+}
+function answer(q) {
+  const { o, dep, ret, ag } = chatCtx, f = filters, t = q.toLowerCase();
+  const d0 = new Date(o.from + "T00:00"), d1 = new Date(o.until + "T00:00");
+  const span = o.from === o.until ? `nur am ${fmtDate(d0)}` : `zwischen ${fmtDate(d0)} und ${fmtDate(d1)}`;
+  if (/verfüg|frei|platz|noch/.test(t)) return `Die Verfügbarkeit prüft ${ag.name} live, wenn du auf «Buchen» tippst. Vorgeschlagen ist Abreise am ${fmtDate(dep)}, Rückreise am ${fmtDate(ret)}.`;
+  if (/inbegriffen|inklusive|enthalten|dabei/.test(t)) return `Im Preis sind enthalten:\n• ${o.incl.join("\n• ")}`;
+  if (/datum|verschieb|andere|später|früher|termin|wann/.test(t)) return `Laut ${ag.name} ist die Abreise ${span} möglich. Dein Wunschdatum wählst du direkt beim Anbieter.`;
+  if (/kind|familie|baby/.test(t)) return o.kids ? `Kinder sind herzlich willkommen. ${o.child == null ? `Den Kinderpreis berechnet ${ag.name} je nach Alter direkt bei der Buchung.` : `Pro Kind kostet es ${o.child ? chf(o.child) : "nichts extra"}.`}` : `Dieses Hotel ist leider nur für Erwachsene. Ich kann dir gerne ein familienfreundliches Hotel in der Nähe vorschlagen.`;
+  if (/gepäck|koffer|kg/.test(t)) return `Wie viel Gepäck inbegriffen ist, hängt von der Fluggesellschaft ab. Das siehst du bei ${ag.name} vor dem Buchen.`;
+  if (/rabatt|günstig|preis|billig|teuer|kost/.test(t)) return `Der Preis für deine Gruppe liegt bei ${chf(total(o, f))}. Das ist der Ab-Preis laut ${ag.name}, Stand 8. Oktober 2026. Der genaue Preis kann je nach Datum abweichen.`;
+  if (/transfer|flughafen/.test(t)) return o.incl.some(i => /transfer/i.test(i)) ? `Der Transfer vom Flughafen ins Hotel ist inbegriffen.` : `Ob ein Transfer dabei ist, steht in den Angebotsdetails bei ${ag.name}.`;
+  if (/hallo|grüezi|hoi|hi\b|guten/.test(t)) return `Hallo! Was möchtest du zum Angebot wissen?`;
+  if (/danke|merci/.test(t)) return `Gern geschehen! Wenn du buchen möchtest, kannst du das direkt bei ${ag.name} machen.`;
+  return `Gute Frage! Das kläre ich gern für dich ab und melde mich gleich. Schnell beantworten kann ich Fragen zu Verfügbarkeit, Datum, Leistungen, Kindern, Gepäck und Preis.`;
+}
+function send(text) {
+  text = text.trim(); if (!text) return;
+  const list = chats[chatCtx.o.id];
+  list.push({ me: true, t: text }); renderMsgs(true);
+  setTimeout(() => { list.push({ me: false, t: answer(text) }); renderMsgs(); }, 900 + Math.random() * 600);
+}
+$("#composer").onsubmit = e => { e.preventDefault(); send($("#chat-input").value); $("#chat-input").value = ""; };
+$("#chat-close").onclick = closeChat;
+
+/* ================= Filter ================= */
+function renderFilter() {
+  const d = draft;
+  $("#f-types").innerHTML = TYPES.map(t => `<button type="button" class="chip" aria-pressed="${d.types.includes(t)}" data-t="${t}">${t}</button>`).join("");
+  const countries = [...new Set(OFFERS.map(o => o.country))].sort((a, b) => a.localeCompare(b, "de"));
+  $("#f-countries").innerHTML = `<button type="button" class="chip" aria-pressed="${!d.countries.length}" data-c="">Alle Länder</button>` +
+    countries.map(c => `<button type="button" class="chip" aria-pressed="${d.countries.includes(c)}" data-c="${c}">${c}</button>`).join("");
+  $("#o-countries").textContent = d.countries.length ? `${d.countries.length} gewählt` : "";
+  $("#f-hours").value = d.hours; $("#o-hours").textContent = "bis " + hrs(d.hours);
+  $("#o-adults").textContent = d.adults; $("#o-kids").textContent = d.kids;
+  $("#ad-minus").disabled = d.adults <= 1; $("#ad-plus").disabled = d.adults >= 6; $("#ki-minus").disabled = d.kids <= 0; $("#ki-plus").disabled = d.kids >= 4;
+  $("#kids-ages").innerHTML = Array.from({ length: d.kids }, (_, i) => `<label for="age${i}">Alter Kind ${i + 1}<select id="age${i}" data-i="${i}">${Array.from({ length: 18 }, (_, a) => `<option ${d.ages[i] === a ? "selected" : ""} value="${a}">${a} J.</option>`).join("")}</select></label>`).join("");
+  $("#f-from").value = d.from; $("#f-to").value = d.to; $("#f-from").min = iso(TODAY); $("#f-to").min = d.from;
+  const n = results(d).length;
+  $("#apply").textContent = n ? `${n} Angebot${n === 1 ? "" : "e"} zeigen` : "Keine Angebote mit diesen Filtern";
+  $("#apply").disabled = !n;
+}
+$("#f-types").onclick = e => { const t = e.target.closest("[data-t]")?.dataset.t; if (!t) return; draft.types = draft.types.includes(t) ? draft.types.filter(x => x !== t) : [...draft.types, t]; renderFilter(); };
+$("#f-countries").onclick = e => { const b = e.target.closest("[data-c]"); if (!b) return; const c = b.dataset.c;
+  draft.countries = !c ? [] : draft.countries.includes(c) ? draft.countries.filter(x => x !== c) : [...draft.countries, c]; renderFilter(); };
+$("#f-hours").oninput = e => { draft.hours = +e.target.value; renderFilter(); };
+$("#ad-minus").onclick = () => { draft.adults--; renderFilter(); };
+$("#ad-plus").onclick = () => { draft.adults++; renderFilter(); };
+$("#ki-minus").onclick = () => { draft.kids--; draft.ages.length = draft.kids; renderFilter(); };
+$("#ki-plus").onclick = () => { draft.kids++; draft.ages.push(6); renderFilter(); };
+$("#kids-ages").onchange = e => { draft.ages[+e.target.dataset.i] = +e.target.value; };
+$("#f-from").onchange = e => { draft.from = e.target.value || iso(TODAY); if (draft.to < draft.from) draft.to = draft.from; renderFilter(); };
+$("#f-to").onchange = e => { draft.to = e.target.value || draft.from; renderFilter(); };
+$("#reset").onclick = () => { draft = DEFAULTS(); renderFilter(); };
+$("#filter-form").onsubmit = e => {
+  e.preventDefault(); filters = structuredClone(draft); store.set("filters2", filters);
+  seen = []; store.set("seen", seen); buildQueue(); show("deck");
+};
+
+/* ================= Navigation ================= */
+function updateCount() { $("#count").textContent = liked.length || ""; }
+function updateSummary() {
+  const f = filters, n = results(f).length;
+  const dfmt = s => { const d = new Date(s + "T00:00"); return `${d.getDate()}.${d.getMonth() + 1}.`; };
+  $("#summary").innerHTML = `<strong>${queue.length} von ${n}</strong> übrig<span class="sd"><br>${f.adults} Erw.${f.kids ? ` · ${f.kids} Ki.` : ""} · bis ${hrs(f.hours)} · ${dfmt(f.from)}–${dfmt(f.to)}</span>`;
+}
+const isDesk = () => matchMedia("(min-width: 1000px)").matches;
+function show(v) {
+  closeDetail();
+  for (const k of ["deck", "saved", "filter"]) { $("#v-" + k).hidden = k !== v; $("#t-" + k).toggleAttribute("aria-current", k === v); if (k === v) $("#t-" + k).setAttribute("aria-current", "page"); }
+  if (isDesk()) { renderDeck(); renderList(); draft = structuredClone(filters); renderFilter(); return; }
+  if (v === "deck") renderDeck();
+  if (v === "saved") renderList();
+  if (v === "filter") { draft = structuredClone(filters); renderFilter(); }
+}
+$("#t-deck").onclick = () => show("deck");
+$("#t-saved").onclick = () => show("saved");
+$("#t-filter").onclick = () => show("filter");
+$("#seg-liked").onclick = () => { listMode = "liked"; renderList(); };
+$("#seg-all").onclick = () => { listMode = "all"; renderList(); };
+$("#clear-saved").onclick = () => { liked = []; store.set("liked", liked); updateCount(); renderList(); };
+let wasDesk = isDesk();
+addEventListener("resize", () => { if (isDesk() !== wasDesk) { wasDesk = isDesk(); show(wasDesk ? "deck" : "deck"); } });
+$("#b-like").onclick = () => decide(true);
+$("#b-nope").onclick = () => decide(false);
+$("#b-info").onclick = () => queue[0] && openDetail(queue[0]);
+document.addEventListener("keydown", e => {
+  if (!$("#match").hidden) { if (e.key === "Escape") hideMatch(); return; }
+  if ($("#chat").classList.contains("open")) { if (e.key === "Escape") closeChat(); return; }
+  if ($("#sheet").classList.contains("open")) { if (e.key === "Escape") closeDetail(); return; }
+  if ($("#v-deck").hidden || e.target.closest("input,select")) return;
+  if (e.key === "ArrowRight") decide(true); else if (e.key === "ArrowLeft") decide(false); else if (e.key === "ArrowUp" && queue[0]) openDetail(queue[0]);
+  else if (e.key === " " && queue[0]) { e.preventDefault(); const c = document.querySelector(`.card[data-id="${queue[0].id}"]`); if (c) stepPhoto(c, c.querySelector(".ph:last-child.on") ? -3 : 1); }
+});
+let tt; function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 1400); }
+
+/* ================= Tag / Nacht ================= */
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+function applyTheme(mode) {
+  const root = document.documentElement;
+  if (mode) root.setAttribute("data-theme", mode); else root.removeAttribute("data-theme");
+  const dark = mode ? mode === "dark" : darkMQ.matches;
+  document.body.classList.toggle("is-dark", dark);
+  $("#theme").setAttribute("aria-label", dark ? "Tagmodus einschalten" : "Nachtmodus einschalten");
+}
+applyTheme(store.get("theme2", "light"));
+$("#theme").onclick = () => { const next = document.body.classList.contains("is-dark") ? "light" : "dark"; store.set("theme2", next); applyTheme(next); };
+
+buildQueue(); updateCount(); renderDeck(); if (isDesk()) show("deck");
+</script>
+
+</body>
+</html>
