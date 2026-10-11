@@ -1,0 +1,28 @@
+{
+  "_hinweis": "Spaltennamen im Feed. Mehrere Namen pro Feld = der erste vorhandene wird genommen. Voreingestellt für Awin-Feeds.",
+  "columns": {
+    "id": ["aw_product_id", "merchant_product_id", "product_id", "id"],
+    "url": ["aw_deep_link", "deeplink", "deep_link", "link", "url"],
+    "hotel": ["product_name", "name", "title"],
+    "text": ["description", "product_short_description", "short_description"],
+    "category": ["merchant_category", "category_name", "category"],
+    "price": ["search_price", "store_price", "price", "display_price"],
+    "was": ["rrp_price", "base_price", "product_price_old", "old_price"],
+    "currency": "currency",
+    "country": ["Travel:destination_country", "destination_country", "country"],
+    "place": ["Travel:destination_city", "Travel:destination_region", "destination", "destination_city", "region"],
+    "nights": ["Travel:duration", "duration", "nights"],
+    "board": ["Travel:board_type", "board", "board_type"],
+    "stars": ["Travel:hotel_stars", "stars", "hotel_stars", "rating"],
+    "from": ["valid_from", "Travel:departure_date", "departure_date", "start_date"],
+    "until": ["valid_to", "Travel:return_date", "end_date"],
+    "agency": ["merchant_name", "brand", "advertiser"],
+    "images": ["merchant_image_url", "large_image", "aw_image_url", "alternate_image", "alternate_image_two", "alternate_image_three", "image_link", "image_url"]
+  },
+  "currency": "CHF",
+  "delimiter": null,
+  "defaultHours": 3,
+  "defaultAgency": "Reiseanbieter",
+  "minPrice": 99,
+  "maxOffers": 200
+}

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Datenschutz · Veni Vidi Volo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #F8F3EA; --surface: #FFFDF8; --ink: #1C1712; --muted: #6F665C; --line: #E6DCCB; --sun: #E0623F; --sea: #1D6F80; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #14110E; --surface: #1E1915; --ink: #F3ECE2; --muted: #A99E90; --line: #362D25; --sun: #F08A66; --sea: #5FB3C2; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #14110E; --surface: #1E1915; --ink: #F3ECE2; --muted: #A99E90; --line: #362D25; --sun: #F08A66; --sea: #5FB3C2; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 "Manrope", system-ui, sans-serif; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 64px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.top a.home { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700; font-size: 22px; letter-spacing: .04em; }
+.top img { width: 40px; height: auto; }
+:root[data-theme="dark"] .top img { filter: invert(1); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .top img { filter: invert(1); } }
+.back { color: var(--sea); font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+h1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(34px, 7vw, 46px); line-height: 1.05; margin: 28px 0 6px; }
+.stand { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
+h2 { font-size: 18px; margin: 32px 0 8px; }
+h3 { font-size: 15px; margin: 20px 0 4px; }
+p, li { color: var(--ink); }
+ul { padding-left: 20px; }
+a { color: var(--sea); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+.fill { background: color-mix(in srgb, var(--sun) 16%, transparent); color: var(--sun); border-radius: 6px; padding: 0 5px; font-weight: 700; }
+.toc { columns: 2 220px; font-size: 14px; }
+.toc a { text-decoration: none; }
+footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+footer a { color: var(--muted); }
+</style>
+<script>try { const t = JSON.parse(localStorage.getItem("reisetinder:theme2")); if (t) document.documentElement.setAttribute("data-theme", t); } catch {}</script>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><a class="home" href="./"><img src="logo-mark.png" alt="" width="240" height="238">Veni Vidi Volo</a><a class="back" href="./">‹ Zurück zur App</a></header>
+<main>
+<h1>Datenschutzerklärung</h1>
+<p class="stand">Stand: 11. Oktober 2026</p>
+
+<p>Wir nehmen den Schutz deiner Daten ernst. Hier erklären wir, welche Personendaten bei der Nutzung von Veni Vidi Volo bearbeitet werden, wozu und mit welchen Dienstleistern. Diese Erklärung richtet sich nach dem Schweizer Datenschutzgesetz (DSG) und, soweit anwendbar, nach der EU-Datenschutz-Grundverordnung (DSGVO).</p>
+
+<nav class="card toc" aria-label="Inhalt">
+<a href="#verantwortlich">1. Verantwortlicher</a><br>
+<a href="#hosting">2. Aufruf der Website und Hosting</a><br>
+<a href="#browser">3. Speicherung in deinem Browser</a><br>
+<a href="#konto">4. Benutzerkonto und Anmeldung</a><br>
+<a href="#merkliste">5. Merkliste in deinem Konto</a><br>
+<a href="#extern">6. Schriften, Programmbibliotheken und Bilder</a><br>
+<a href="#partner">7. Buchung und Partnerlinks</a><br>
+<a href="#chat">8. Chat-Prototyp</a><br>
+<a href="#ausland">9. Bekanntgabe ins Ausland</a><br>
+<a href="#dauer">10. Speicherdauer</a><br>
+<a href="#rechte">11. Deine Rechte</a><br>
+<a href="#aenderungen">12. Änderungen</a>
+</nav>
+
+<h2 id="verantwortlich">1. Verantwortlicher</h2>
+<p>Verantwortlich für die Datenbearbeitung ist:</p>
+<div class="card"><p style="margin:0"><b><span class="fill">[Vorname Nachname]</span></b>, <span class="fill">[Strasse Nr.]</span>, <span class="fill">[PLZ Ort]</span>, Schweiz<br>E-Mail: <span class="fill">[kontakt@deine-domain.ch]</span></p></div>
+<p>Für Fragen zum Datenschutz und zur Ausübung deiner Rechte kannst du dich jederzeit an diese Adresse wenden.</p>
+
+<h2 id="hosting">2. Aufruf der Website und Hosting</h2>
+<p>Die Website wird über GitHub Pages bereitgestellt (GitHub Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten, insbesondere deine IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem. Das ist nötig, um die Seite auszuliefern und vor Missbrauch zu schützen. Wir selbst werten diese Daten nicht aus. Details: <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Datenschutzerklärung von GitHub</a>.</p>
+
+<h2 id="browser">3. Speicherung in deinem Browser</h2>
+<p>Damit die App sich deine Einstellungen merkt, speichert sie Daten im lokalen Speicher deines Browsers (localStorage). Das sind deine Filter (Reiseart, Reisezeit, Länder, Reisende, Daten), die gemerkten und bereits gesehenen Angebote, der Tag- oder Nachtmodus und, im Demo-Modus, das lokale Testkonto. Diese Daten bleiben auf deinem Gerät und werden nicht an uns übertragen. Du kannst sie jederzeit löschen, indem du die Websitedaten in deinem Browser löschst.</p>
+<p>Wir verwenden keine Cookies zu Werbe- oder Analysezwecken und kein Tracking wie Google Analytics.</p>
+
+<h2 id="konto">4. Benutzerkonto und Anmeldung</h2>
+<p>Du kannst Veni Vidi Volo ohne Konto nutzen. Wenn du ein Konto erstellst, nutzen wir dafür den Dienst Firebase Authentication von Google (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland, und Google LLC, USA).</p>
+<h3>Anmeldung mit E-Mail</h3>
+<p>Wir bearbeiten deine E-Mail-Adresse, deinen Namen (freiwillig) und dein Passwort. Das Passwort wird von Firebase nur verschlüsselt (als Hash) gespeichert, wir können es nicht einsehen. Für die Bestätigung deiner E-Mail-Adresse und zum Zurücksetzen des Passworts schickt Firebase dir E-Mails.</p>
+<h3>Anmeldung mit Google, Microsoft, Facebook oder Apple</h3>
+<p>Wählst du einen dieser Anbieter, wirst du zu dessen Anmeldeseite weitergeleitet. Der Anbieter übermittelt uns danach deinen Namen, deine E-Mail-Adresse, eine Benutzerkennung und gegebenenfalls dein Profilbild. Welche Daten der Anbieter selbst dabei bearbeitet, regeln dessen Datenschutzbestimmungen: <a href="https://policies.google.com/privacy?hl=de" rel="noopener">Google</a>, <a href="https://privacy.microsoft.com/de-ch/privacystatement" rel="noopener">Microsoft</a>, <a href="https://www.facebook.com/privacy/policy/" rel="noopener">Meta (Facebook)</a>, <a href="https://www.apple.com/chde/legal/privacy/" rel="noopener">Apple</a>.</p>
+<p>Zweck ist, dir ein Konto bereitzustellen und deine Merkliste geräteübergreifend zu speichern. Rechtsgrundlage nach DSGVO ist die Erfüllung des Nutzungsvertrags (Art. 6 Abs. 1 lit. b DSGVO). Mehr zu Firebase: <a href="https://firebase.google.com/support/privacy?hl=de" rel="noopener">Datenschutz und Sicherheit bei Firebase</a>.</p>
+
+<h2 id="merkliste">5. Merkliste in deinem Konto</h2>
+<p>Bist du angemeldet, speichern wir die Kennungen der Angebote, die du gemerkt hast, zusammen mit deiner Benutzerkennung in der Datenbank Cloud Firestore von Google (Firebase). Nur du kannst diese Liste lesen und ändern. Wir nutzen sie ausschliesslich, um sie dir auf deinen Geräten anzuzeigen.</p>
+
+<h2 id="extern">6. Schriften, Programmbibliotheken und Bilder</h2>
+<ul>
+<li><b>Google Fonts:</b> Die Schriften werden von Servern von Google geladen. Dabei wird deine IP-Adresse an Google übermittelt. <a href="https://developers.google.com/fonts/faq/privacy?hl=de" rel="noopener">Mehr dazu</a>.</li>
+<li><b>jsDelivr:</b> Die Programmbibliothek für die Anmeldung (Firebase) wird über das Netzwerk jsDelivr geladen (betrieben von Prospect One, Polen, mit weltweiten Servern). Dabei wird deine IP-Adresse übermittelt. <a href="https://jsdelivr.com/privacy-policy-jsdelivr-net" rel="noopener">Datenschutz bei jsDelivr</a>.</li>
+<li><b>Bilder der Reiseanbieter:</b> Fotos zu den Angeboten werden direkt von den Servern der Reiseanbieter oder des Partnernetzwerks geladen. Dabei erhalten diese deine IP-Adresse.</li>
+</ul>
+<p>Das ist nötig, damit die Seite korrekt dargestellt wird und funktioniert (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO).</p>
+
+<h2 id="partner">7. Buchung und Partnerlinks</h2>
+<p>Wir verkaufen selbst keine Reisen. Tippst du auf «Buchen», wirst du zur Website des Reiseanbieters weitergeleitet. Ab dann gelten dessen Datenschutzbestimmungen. Ein Teil dieser Links sind Partnerlinks, unter anderem über das Netzwerk Awin (AWIN AG, Eichhornstrasse 3, 10785 Berlin, Deutschland). Beim Klick wird über den Server von Awin weitergeleitet, und Awin bzw. der Anbieter speichern auf ihrer Seite Cookies oder ähnliche Kennungen, um eine Buchung unserem Link zuordnen und uns eine Provision auszahlen zu können. Wir erhalten dabei keine Angaben, die dich persönlich identifizieren. <a href="https://help.awin.com/docs/gdpr-at-awin" rel="noopener">Datenschutz bei Awin</a>.</p>
+
+<h2 id="chat">8. Chat-Prototyp</h2>
+<p>Der Chat auf der Angebotsseite ist ein Prototyp. Die Antworten werden direkt in deinem Browser erzeugt. Deine Nachrichten werden weder an uns noch an den Reiseanbieter gesendet und nicht gespeichert.</p>
+
+<h2 id="ausland">9. Bekanntgabe ins Ausland</h2>
+<p>Einige der genannten Dienstleister (GitHub, Google, Microsoft, Meta, Apple) bearbeiten Daten auch in den USA. Diese Unternehmen sind unter dem Swiss-U.S. bzw. EU-U.S. Data Privacy Framework zertifiziert oder verwenden die Standardvertragsklauseln der EU-Kommission, die vom Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB) anerkannt sind.</p>
+
+<h2 id="dauer">10. Speicherdauer</h2>
+<p>Kontodaten und Merkliste speichern wir, solange dein Konto besteht. Wenn du dein Konto löschen möchtest, schreib uns an die oben genannte E-Mail-Adresse. Wir löschen dann deine Daten innert 30 Tagen. Daten im Browser bleiben, bis du sie selbst löschst.</p>
+
+<h2 id="rechte">11. Deine Rechte</h2>
+<p>Du hast das Recht auf Auskunft über deine bei uns gespeicherten Daten, auf Berichtigung, Löschung und Herausgabe deiner Daten sowie das Recht, einer Bearbeitung zu widersprechen. Wende dich dazu an die oben genannte E-Mail-Adresse. Du kannst dich ausserdem beim <a href="https://www.edoeb.admin.ch" rel="noopener">Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB)</a> oder, wenn du in der EU lebst, bei der Datenschutzbehörde deines Landes beschweren.</p>
+
+<h2 id="aenderungen">12. Änderungen</h2>
+<p>Wir passen diese Datenschutzerklärung an, wenn sich die App oder die eingesetzten Dienste ändern. Es gilt die jeweils hier veröffentlichte Fassung.</p>
+</main>
+<footer><a href="./">App</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></footer>
+</div>
+</body>
+</html>
