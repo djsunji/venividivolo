@@ -35,7 +35,7 @@ Ohne Einrichtung läuft ein Demo-Modus. Anleitung: [ANLEITUNG-LOGIN.md](ANLEITUN
 - `scripts/import-feed.mjs` – holt den Feed und schreibt `offers.json`
 - `scripts/feed-config.json` – Spaltennamen des Feeds
 - `.github/workflows/angebote.yml` – startet den Import jeden Tag
-- `impressum.html`, `datenschutz.html` – Impressum und Datenschutzerklärung (Platzhalter in eckigen Klammern ausfüllen)
+- `impressum.html`, `datenschutz.html` – Impressum und Datenschutzerklärung
 - `firestore.rules` – Datenbank-Regeln für die Merkliste (Firebase)
 
 ## Hinweise
