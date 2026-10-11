@@ -153,7 +153,7 @@ Reihenfolge der Wünsche (das Letzte gilt):
 Arbeitsweise, die gut ankam:
 - Direkt umsetzen statt viel fragen; kurze Antworten auf Deutsch, ohne Fachjargon.
 - Nach jeder Änderung: testen (mobil ~400 px und Desktop 1440 px, Tag/Nacht), dann veröffentlichen.
-- Dejan schickt oft Screenshots von Problemen (z. B. PowerShell). Er arbeitet unter Windows.
+- Dejan schickt oft Screenshots von Problemen (z. B. PowerShell). Dejan arbeitet unter Windows.
 - Änderungen dürfen direkt auf `main` (GitHub Pages veröffentlicht automatisch).
 
 ---
