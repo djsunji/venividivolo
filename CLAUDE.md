@@ -3,6 +3,7 @@
 Reiseangebote swipen wie bei Tinder (rechts = gefällt mir, links = nein). Zielgruppe: Reisende ab Zürich.
 Live: https://djsunji.github.io/venividivolo/ (GitHub Pages, Branch `main`, Ordner `/`).
 Betreiber: Dejan Ehrbar. Antworte auf Deutsch (Schweizer Schreibweise: «ss» statt «ß»).
+Ausführliche Übergabe mit Geschichte, Entscheidungen und allen Details: `UEBERGABE.md`.
 
 ## Aufbau
 
